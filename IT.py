@@ -170,7 +170,7 @@ class ITEnvelope(object):
        of three envelopes: Volume (130h), Panning (182h), and Pitch (1D4h)."""
     def __init__(self, file=None, volume=False):
         if not file:
-            self.flags = [0, 0, 0, 0, 0, 0, 0, 0]
+            self.flags = 0
             self.nodenum = 0
             self.loopbegin = 0
             self.loopend = 0
@@ -179,9 +179,7 @@ class ITEnvelope(object):
             self.nodepoints = []
             self.RESERVED = 0
         else:
-            self.flags = list(bin(struct.unpack("<B", file.read(1))[0])[2:].zfill(8))
-            self.flags.reverse()
-
+            self.flags = struct.unpack("<B", file.read(1))[0]
             self.nodenum = struct.unpack("<B", file.read(1))[0]
             self.loopbegin = struct.unpack("<B", file.read(1))[0]
             self.loopend = struct.unpack("<B", file.read(1))[0]
@@ -206,7 +204,7 @@ class ITInstrumentOld(object):
             self.id = 'IMPI'
             self.filename = ''
             self.ZERO = 0          #redundant much?
-            self.flags = [0, 0, 0, 0, 0, 0, 0, 0]
+            self.flags = 0
             self.volloopbegin = 0
             self.volloopend = 0
             self.susloopbegin = 0
@@ -229,10 +227,7 @@ class ITInstrumentOld(object):
             self.id = struct.unpack("<4s", file.read(4))[0]
             self.filename = struct.unpack("<12s", file.read(12))[0].strip()
             self.ZERO = struct.unpack("<B", file.read(1))[0]
-            
-            self.flags = list(bin(struct.unpack("<B", file.read(1))[0])[2:].zfill(8))
-            self.flags.reverse()
-            
+            self.flags = struct.unpack("<B", file.read(1))[0]
             self.volloopbegin = struct.unpack("<B", file.read(1))[0]
             self.volloopend = struct.unpack("<B", file.read(1))[0]
             self.susloopbegin = struct.unpack("<B", file.read(1))[0]
@@ -338,10 +333,10 @@ class ITSample(object):
             self.filename = ''
             self.ZERO = 0
             self.globalvol = 0
-            self.flags = [0, 0, 0, 0, 0, 0, 0, 0]
+            self.flags = 0
             self.volume = 0
             self.name = ''
-            self.convertflags = [0, 0, 0, 0, 0, 0, 0, 0]
+            self.convertflags = 0
             self.defaultpan = 0
             self.length = 0
             self.loopbegin = 0
@@ -363,16 +358,10 @@ class ITSample(object):
             self.filename = struct.unpack("<12s", file.read(12))[0]
             self.ZERO = struct.unpack("<B", file.read(1))[0]
             self.globalvol = struct.unpack("<B", file.read(1))[0]
-            
-            self.flags = list(bin(struct.unpack("<B", file.read(1))[0])[2:].zfill(8))
-            self.flags.reverse()
-            
+            self.flags = struct.unpack("<B", file.read(1))[0]
             self.volume = struct.unpack("<B", file.read(1))[0]
             self.name = struct.unpack("<26s", file.read(26))[0].replace('\x00', ' ').rstrip()
-            
-            self.convertflags = list(bin(struct.unpack("<B", file.read(1))[0])[2:].zfill(8))
-            self.convertflags.reverse()
-            
+            self.convertflags = struct.unpack("<B", file.read(1))[0]
             self.defaultpan = struct.unpack("<B", file.read(1))[0]
             self.length = struct.unpack("<L", file.read(4))[0]
             self.loopbegin = struct.unpack("<L", file.read(4))[0]
@@ -396,6 +385,7 @@ class IT(object):
         if not filename:
             self.id = 'IMPM'
             self.songname = ''
+            self.RESERVED1 = 0
             self.ordernum = 0
             self.instrumentnum = 0
             self.samplenum = 0
@@ -412,6 +402,7 @@ class IT(object):
             self.midipwd = 0
             self.messagelen = 0
             self.messageoffset = 0
+            self.RESERVED2 = 0
             self.message = ''
             self.channelpan = []
             self.channelvol = []
@@ -424,7 +415,7 @@ class IT(object):
 
             self.id = struct.unpack("<4s", f.read(4))[0]                       # 'IMPM'
             self.songname = struct.unpack("<26s", f.read(26))[0].replace('\x00', ' ').strip()      # Song title (padded with NULL)
-            self.RESERVED1 = f.read(2)                # RESERVED (??)
+            self.RESERVED1 = struct.unpack("<H", f.read(2))[0]                # RESERVED (??)
             self.ordernum = struct.unpack("<H", f.read(2))[0]                # Number of orders in song
             self.instrumentnum = struct.unpack("<H", f.read(2))[0]             # Number of instruments in song
             self.samplenum = struct.unpack("<H", f.read(2))[0]               # Number of samples in song
@@ -438,12 +429,8 @@ class IT(object):
             self.cmwt.insert(0, int(hex(ord(f.read(1)))[2:]))
             self.cmwt.insert(0, int(hex(ord(f.read(1)))[2:]))               
     
-            self.flags = list(bin(struct.unpack("<H", f.read(2))[0])[2:].zfill(16))
-            self.flags.reverse()
-        
-            self.special = list(bin(struct.unpack("<H", f.read(2))[0])[2:].zfill(16))
-            self.special.reverse()
-    
+            self.flags = struct.unpack("<H", f.read(2))[0]
+            self.special = struct.unpack("<H", f.read(2))[0]
             self.globalvol = struct.unpack("<B", f.read(1))[0]
             self.mixvol = struct.unpack("<B", f.read(1))[0]
             self.speed = struct.unpack("<B", f.read(1))[0]
@@ -452,7 +439,7 @@ class IT(object):
             self.midipwd = struct.unpack("<B", f.read(1))[0]
             self.messagelen = struct.unpack("<H", f.read(2))[0]
             self.messageoffset = struct.unpack("<I", f.read(4))[0]
-            self.RESERVED2 = f.read(4)
+            self.RESERVED2 = struct.unpack("<I", f.read(4))[0]
     
             self.channelpan = list(struct.unpack("<64B", f.read(64)))
             self.channelvol = list(struct.unpack("<64B", f.read(64)))
@@ -498,6 +485,3 @@ class IT(object):
                     
             f.close()
 
-
-#mod = IT('SILENT.IT')
-#print mod.id, mod.songname, '.'
