@@ -22,20 +22,20 @@ class Note(object):
         elif self.note == 255: ret1 = '==='
         else: ret1 = '~~~'
 
-        if self.instrument: ret2 = str(self.instrument)
+        if self.instrument: ret2 = str(self.instrument).zfill(2)
         else: ret2 = '..'
 
         if self.voleffect == 0: ret3 = '..'
-        elif self.voleffect == 1: ret3 = hex(self.volparam)[2:].zfill(2).upper()
-        elif self.voleffect == 2: ret3 = hex(self.volparam + 128)[2:].zfill(2).upper()
-        elif self.voleffect == 3: ret3 = hex(self.volparam + 85)[2:].zfill(2).upper()
-        elif self.voleffect == 4: ret3 = hex(self.volparam + 95)[2:].zfill(2).upper()
-        elif self.voleffect == 5: ret3 = hex(self.volparam + 65)[2:].zfill(2).upper()
-        elif self.voleffect == 6: ret3 = hex(self.volparam + 75)[2:].zfill(2).upper()
-        elif self.voleffect == 8: ret3 = hex(self.volparam + 203)[2:].zfill(2).upper()
-        elif self.voleffect == 11: ret3 = hex(self.volparam + 193)[2:].zfill(2).upper()
-        elif self.voleffect == 12: ret3 = hex(self.volparam + 115)[2:].zfill(2).upper()
-        elif self.voleffect == 13: ret3 = hex(self.volparam + 105)[2:].zfill(2).upper()
+        elif self.voleffect == 1: ret3 = str(self.volparam).zfill(2).upper()
+        elif self.voleffect == 2: ret3 = str(self.volparam + 128).zfill(2).upper()
+        elif self.voleffect == 3: ret3 = str(self.volparam + 85).zfill(2).upper()
+        elif self.voleffect == 4: ret3 = str(self.volparam + 95).zfill(2).upper()
+        elif self.voleffect == 5: ret3 = str(self.volparam + 65).zfill(2).upper()
+        elif self.voleffect == 6: ret3 = str(self.volparam + 75).zfill(2).upper()
+        elif self.voleffect == 8: ret3 = str(self.volparam + 203).zfill(2).upper()
+        elif self.voleffect == 11: ret3 = str(self.volparam + 193).zfill(2).upper()
+        elif self.voleffect == 12: ret3 = str(self.volparam + 115).zfill(2).upper()
+        elif self.voleffect == 13: ret3 = str(self.volparam + 105).zfill(2).upper()
         
         if self.effect: letter = commands[self.effect-1]
         else: letter = '.'
