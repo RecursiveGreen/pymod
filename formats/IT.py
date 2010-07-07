@@ -1,4 +1,4 @@
-﻿import struct
+import struct
 from pymod.constants import *
 from pymod.module import *
 from pymod.util import *

@@ -1,4 +1,4 @@
-﻿import struct
+import struct
 
 class Sample(object):
     """A simple sample object"""
