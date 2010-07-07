@@ -62,79 +62,81 @@ class ITInstrumentOld(Instrument):
         self.itinstoldtrackerver = 0
         self.itinstoldnumsamples = 0
         
-        if file:
-            # Load the old IT instrument data
-            file.seek(offset)
-            
-            itinstoldid = struct.unpack("<4s", file.read(4))[0]
-            itinstoldfilename = struct.unpack("<12s", file.read(12))[0].strip()
-            itinstoldZERO = struct.unpack("<B", file.read(1))[0]
-            itinstoldflags = struct.unpack("<B", file.read(1))[0]
-            itinstoldvolloopbegin = struct.unpack("<B", file.read(1))[0]
-            itinstoldvolloopend = struct.unpack("<B", file.read(1))[0]
-            itinstoldsustloopbegin = struct.unpack("<B", file.read(1))[0]
-            itinstoldsustloopend = struct.unpack("<B", file.read(1))[0]
-            itinstoldRESERVED1 = struct.unpack("<H", file.read(2))[0]
-            itinstoldfadeout = struct.unpack("<H", file.read(2))[0]
-            itinstoldnna = struct.unpack("<B", file.read(1))[0]
-            itinstolddnc = struct.unpack("<B", file.read(1))[0]
-            self.itinstoldtrackerver = struct.unpack("<H", file.read(2))[0]
-            self.itinstoldnumsamples = struct.unpack("<B", file.read(1))[0]
-            itinstoldRESERVED2 = struct.unpack("<B", file.read(1))[0]
-            itinstoldname = struct.unpack("<26s", file.read(26))[0].replace('\x00', ' ').rstrip()
-            itinstoldRESERVED3 = list(struct.unpack("<HHH", file.read(6)))
-            
-            itinstoldnotekeytable = []
-            for i in range(120):
-                itinstoldnotekeytable.append(list(struct.unpack("<BB", file.read(2))))
-            
-            itinstoldvolumeenv = list(struct.unpack("<200B", file.read(200)))
-            
-            itinstoldnodes = []
-            for i in range(25):
-                itinstoldnodes.append(list(struct.unpack("<BB", file.read(2))))
-            
-            # Parse it into the generic Instrument
-            self.name = itinstoldname
-            self.filename = itinstoldfilename
-
-            self.newnoteact = itinstoldnna
-            if itinstolddnc:
-                self.dupchktype = DCT_NOTE
-                self.dupchkaction = DCA_NOTECUT
-
-            self.fadeout = itinstoldfadeout << 6
-            self.pitchpansep = 0
-            self.pitchpancenter = NOTE_MIDC
-            self.globalvol = 128
-            self.panning = 128
-
-            for i in range(120):
-                if itinstoldnotekeytable[i][0] > NOTE_NONE and itinstoldnotekeytable[i][0] <= NOTE_LAST:
-                    self.notemap[i] = itinstoldnotekeytable[i][0] + NOTE_FIRST
-                else:
-                    self.notemap[i] = i + NOTE_FIRST
-                self.samplemap[i] = itinstoldnotekeytable[i][1]
-
-            if itinstoldflags & 1:
-                self.flags = self.flags | ENV_VOLUME
-            if itinstoldflags & 2:
-                self.flags = self.flags | ENV_VOLLOOP
-            if itinstoldflags & 4:
-                self.flags = self.flags | ENV_VOLSUSTAIN
-
-            self.volumeenv.loopbegin = itinstoldvolloopbegin
-            self.volumeenv.loopend = itinstoldvolloopend
-            self.volumeenv.sustloopbegin = itinstoldsustloopbegin
-            self.volumeenv.sustloopend = itinstoldsustloopend
-            self.volumeenv.nodes = 25
+        if file: self.load(file, offset)
         
-            for i in range(25):
-                if itinstoldnodes[i][0] == 0xff:
-                    self.volumeenv.nodes = i
-                    break
-                self.volumeenv.ticks[i] = itinstoldnodes[i][0]
-                self.volumeenv.values[i] = itinstoldnodes[i][1]
+    def load(self, file, offset):
+        # Load the old IT instrument data
+        file.seek(offset)
+            
+        itinstoldid = struct.unpack("<4s", file.read(4))[0]
+        itinstoldfilename = struct.unpack("<12s", file.read(12))[0].strip()
+        itinstoldZERO = struct.unpack("<B", file.read(1))[0]
+        itinstoldflags = struct.unpack("<B", file.read(1))[0]
+        itinstoldvolloopbegin = struct.unpack("<B", file.read(1))[0]
+        itinstoldvolloopend = struct.unpack("<B", file.read(1))[0]
+        itinstoldsustloopbegin = struct.unpack("<B", file.read(1))[0]
+        itinstoldsustloopend = struct.unpack("<B", file.read(1))[0]
+        itinstoldRESERVED1 = struct.unpack("<H", file.read(2))[0]
+        itinstoldfadeout = struct.unpack("<H", file.read(2))[0]
+        itinstoldnna = struct.unpack("<B", file.read(1))[0]
+        itinstolddnc = struct.unpack("<B", file.read(1))[0]
+        self.itinstoldtrackerver = struct.unpack("<H", file.read(2))[0]
+        self.itinstoldnumsamples = struct.unpack("<B", file.read(1))[0]
+        itinstoldRESERVED2 = struct.unpack("<B", file.read(1))[0]
+        itinstoldname = struct.unpack("<26s", file.read(26))[0].replace('\x00', ' ').rstrip()
+        itinstoldRESERVED3 = list(struct.unpack("<HHH", file.read(6)))
+            
+        itinstoldnotekeytable = []
+        for i in range(120):
+            itinstoldnotekeytable.append(list(struct.unpack("<BB", file.read(2))))
+            
+        itinstoldvolumeenv = list(struct.unpack("<200B", file.read(200)))
+            
+        itinstoldnodes = []
+        for i in range(25):
+            itinstoldnodes.append(list(struct.unpack("<BB", file.read(2))))
+            
+        # Parse it into the generic Instrument
+        self.name = itinstoldname
+        self.filename = itinstoldfilename
+
+        self.newnoteact = itinstoldnna
+        if itinstolddnc:
+            self.dupchktype = DCT_NOTE
+            self.dupchkaction = DCA_NOTECUT
+
+        self.fadeout = itinstoldfadeout << 6
+        self.pitchpansep = 0
+        self.pitchpancenter = NOTE_MIDC
+        self.globalvol = 128
+        self.panning = 128
+
+        for i in range(120):
+            if itinstoldnotekeytable[i][0] > NOTE_NONE and itinstoldnotekeytable[i][0] <= NOTE_LAST:
+                self.notemap[i] = itinstoldnotekeytable[i][0] + NOTE_FIRST
+            else:
+                self.notemap[i] = i + NOTE_FIRST
+            self.samplemap[i] = itinstoldnotekeytable[i][1]
+
+        if itinstoldflags & 1:
+            self.flags = self.flags | ENV_VOLUME
+        if itinstoldflags & 2:
+            self.flags = self.flags | ENV_VOLLOOP
+        if itinstoldflags & 4:
+            self.flags = self.flags | ENV_VOLSUSTAIN
+
+        self.volumeenv.loopbegin = itinstoldvolloopbegin
+        self.volumeenv.loopend = itinstoldvolloopend
+        self.volumeenv.sustloopbegin = itinstoldsustloopbegin
+        self.volumeenv.sustloopend = itinstoldsustloopend
+        self.volumeenv.nodes = 25
+        
+        for i in range(25):
+            if itinstoldnodes[i][0] == 0xff:
+                self.volumeenv.nodes = i
+                break
+            self.volumeenv.ticks[i] = itinstoldnodes[i][0]
+            self.volumeenv.values[i] = itinstoldnodes[i][1]
 
 
 class ITInstrument(Instrument):
@@ -144,132 +146,160 @@ class ITInstrument(Instrument):
         self.itinsttrackerver = 0
         self.itinstnumsamples = 0
         
-        if file:
-            # Load the IT instrument data
-            file.seek(offset)
-            
-            itinstid = struct.unpack("<4s", file.read(4))[0]
-            itinstfilename = struct.unpack("<12s", file.read(12))[0]
-            itinstZERO = struct.unpack("<B", file.read(1))[0]
-            itinstnna = struct.unpack("<B", file.read(1))[0]
-            itinstdupchktype = struct.unpack("<B", file.read(1))[0]
-            itinstdupchkaction = struct.unpack("<B", file.read(1))[0]
-            itinstfadeout = struct.unpack("<H", file.read(2))[0]
-            itinstpitchpansep = struct.unpack("<b", file.read(1))[0]
-            itinstpitchpancenter = struct.unpack("<B", file.read(1))[0]
-            itinstglobalvol = struct.unpack("<B", file.read(1))[0]
-            itinstdefaultpan = struct.unpack("<B", file.read(1))[0]
-            itinstrandvol = struct.unpack("<B", file.read(1))[0]
-            itinstrandpan = struct.unpack("<B", file.read(1))[0]
-            self.itinsttrackerver = struct.unpack("<H", file.read(2))[0]
-            self.itinstnumsamples = struct.unpack("<B", file.read(1))[0]
-            itinstRESERVED1 = struct.unpack("<B", file.read(1))[0]
-            itinstname = struct.unpack("<26s", file.read(26))[0].replace('\x00', ' ').rstrip()
-            itinstinitfiltercut = struct.unpack("<B", file.read(1))[0]
-            itinstinitfilterres = struct.unpack("<B", file.read(1))[0]
-            itinstmidichannel = struct.unpack("<B", file.read(1))[0]
-            itinstmidiprogram = struct.unpack("<B", file.read(1))[0]
-            itinstmidibank = struct.unpack("<H", file.read(2))[0]
-            
-            itinstnotekeytable = []
-            for i in range(120):
-                itinstnotekeytable.append(list(struct.unpack("<BB", file.read(2))))
-            
-            self.volumeenv = ITEnvelope(file, 0)
-            self.panningenv = ITEnvelope(file, 1)
-            self.pitchenv = ITEnvelope(file, 2)
-            
-            # Parse it into the generic Instrument
-            self.name = itinstname
-            self.filename = itinstfilename
-
-            self.newnoteact = itinstnna
-            self.dupchktype = itinstdupchktype
-            self.dupchkaction = itinstdupchkaction
-            self.fadeout = itinstfadeout << 5
-            self.pitchpansep = CLAMP(itinstpitchpansep, -32, 32)
-            self.pitchpancenter = MIN(itinstpitchpancenter, 119)
-            self.globalvol = MIN(itinstglobalvol, 128)
-            
-            self.panning = MIN((itinstdefaultpan & 127), 64) * 4
-            if not itinstdefaultpan & 128: self.flags = self.flags | ENV_SETPANNING
+        if file: self.load(file, offset)
         
-            self.volswing = MIN(itinstrandvol, 100)
-            self.panswing = MIN(itinstrandpan, 64)
-            self.initfiltercut = itinstinitfiltercut
-            self.initfilterres = itinstinitfilterres
-
-            # straight from Schism Tracker, and still confusing. . .
-            # self.midichannelmask = ((0, 1 << (itinstmidichannel - 1))[itinstmidichannel > 0], 0x10000 + itinstmidichannel)[itinstmidichannel > 16]
+    def load(self, file, offset):    
+        # Load the IT instrument data
+        file.seek(offset)
             
-            # TODO: not correct, but the above doesn't work. . .
-            self.midichannelmask = itinstmidichannel
-            self.midiprogram = itinstmidiprogram
-            self.midibank = itinstmidibank
+        itinstid = struct.unpack("<4s", file.read(4))[0]
+        itinstfilename = struct.unpack("<12s", file.read(12))[0]
+        itinstZERO = struct.unpack("<B", file.read(1))[0]
+        itinstnna = struct.unpack("<B", file.read(1))[0]
+        itinstdupchktype = struct.unpack("<B", file.read(1))[0]
+        itinstdupchkaction = struct.unpack("<B", file.read(1))[0]
+        itinstfadeout = struct.unpack("<H", file.read(2))[0]
+        itinstpitchpansep = struct.unpack("<b", file.read(1))[0]
+        itinstpitchpancenter = struct.unpack("<B", file.read(1))[0]
+        itinstglobalvol = struct.unpack("<B", file.read(1))[0]
+        itinstdefaultpan = struct.unpack("<B", file.read(1))[0]
+        itinstrandvol = struct.unpack("<B", file.read(1))[0]
+        itinstrandpan = struct.unpack("<B", file.read(1))[0]
+        self.itinsttrackerver = struct.unpack("<H", file.read(2))[0]
+        self.itinstnumsamples = struct.unpack("<B", file.read(1))[0]
+        itinstRESERVED1 = struct.unpack("<B", file.read(1))[0]
+        itinstname = struct.unpack("<26s", file.read(26))[0].replace('\x00', ' ').rstrip()
+        itinstinitfiltercut = struct.unpack("<B", file.read(1))[0]
+        itinstinitfilterres = struct.unpack("<B", file.read(1))[0]
+        itinstmidichannel = struct.unpack("<B", file.read(1))[0]
+        itinstmidiprogram = struct.unpack("<B", file.read(1))[0]
+        itinstmidibank = struct.unpack("<H", file.read(2))[0]
+            
+        itinstnotekeytable = []
+        for i in range(120):
+            itinstnotekeytable.append(list(struct.unpack("<BB", file.read(2))))
+            
+        self.volumeenv = ITEnvelope(file, 0)
+        self.panningenv = ITEnvelope(file, 1)
+        self.pitchenv = ITEnvelope(file, 2)
+            
+        # Parse it into the generic Instrument
+        self.name = itinstname
+        self.filename = itinstfilename
 
-            for i in range(120):
-                if itinstnotekeytable[i][0] > NOTE_NONE and itinstnotekeytable[i][0] <= NOTE_LAST:
-                    self.notemap[i] = itinstnotekeytable[i][0] + NOTE_FIRST
-                else:
-                    self.notemap[i] = i + NOTE_FIRST
-                self.samplemap[i] = itinstnotekeytable[i][1]
+        self.newnoteact = itinstnna
+        self.dupchktype = itinstdupchktype
+        self.dupchkaction = itinstdupchkaction
+        self.fadeout = itinstfadeout << 5
+        self.pitchpansep = CLAMP(itinstpitchpansep, -32, 32)
+        self.pitchpancenter = MIN(itinstpitchpancenter, 119)
+        self.globalvol = MIN(itinstglobalvol, 128)
+            
+        self.panning = MIN((itinstdefaultpan & 127), 64) * 4
+        if not itinstdefaultpan & 128: self.flags = self.flags | ENV_SETPANNING
+        
+        self.volswing = MIN(itinstrandvol, 100)
+        self.panswing = MIN(itinstrandpan, 64)
+        self.initfiltercut = itinstinitfiltercut
+        self.initfilterres = itinstinitfilterres
 
-            self.flags = self.flags | self.volumeenv.flags
-            self.flags = self.flags | self.panningenv.flags
-            self.flags = self.flags | self.pitchenv.flags
+        # straight from Schism Tracker, and still confusing. . .
+        # self.midichannelmask = ((0, 1 << (itinstmidichannel - 1))[itinstmidichannel > 0], 0x10000 + itinstmidichannel)[itinstmidichannel > 16]
+            
+        # TODO: not correct, but the above doesn't work. . .
+        self.midichannelmask = itinstmidichannel
+        self.midiprogram = itinstmidiprogram
+        self.midibank = itinstmidibank
+
+        for i in range(120):
+            if itinstnotekeytable[i][0] > NOTE_NONE and itinstnotekeytable[i][0] <= NOTE_LAST:
+                self.notemap[i] = itinstnotekeytable[i][0] + NOTE_FIRST
+            else:
+                self.notemap[i] = i + NOTE_FIRST
+            self.samplemap[i] = itinstnotekeytable[i][1]
+
+        self.flags = self.flags | self.volumeenv.flags
+        self.flags = self.flags | self.panningenv.flags
+        self.flags = self.flags | self.pitchenv.flags
 
 
 class ITSample(Sample):
     """Definition of an Impulse Tracker sample"""
-    def __init__(self, file=None, offset=0):
-        if not file:
-            self.id = 'IMPS'
-            self.filename = ''
-            self.ZERO = 0
-            self.globalvol = 0
-            self.flags = 0
-            self.volume = 0
-            self.name = ''
-            self.convertflags = 0
-            self.defaultpan = 0
-            self.length = 0
-            self.loopbegin = 0
-            self.loopend = 0
-            self.c5speed = 0
-            self.susloopbegin = 0
-            self.susloopend = 0
-            self.offset = 0
-            self.vibspeed = 0
-            self.vibdepth = 0
-            self.vibrate = 0
-            self.vibtype = 0
+    def __init__(self, file=None, offset=0, cwtv=0x0214):
+        super(ITSample, self).__init__()
+        self.itsamploadflags = SF_LE
+        
+        if file: self.load(file, offset, cwtv)
+        
+    def load(self, file, offset, cwtv):
+        #Load the IT sample headers
+        file.seek(offset)
             
-            self.data = []            #TODO!
+        itsampid = struct.unpack("<4s", file.read(4))[0]
+        itsampfilename = struct.unpack("<12s", file.read(12))[0]
+        itsampZERO = struct.unpack("<B", file.read(1))[0]
+        itsampglobalvol = struct.unpack("<B", file.read(1))[0]
+        itsampflags = struct.unpack("<B", file.read(1))[0]
+        itsampvolume = struct.unpack("<B", file.read(1))[0]
+        itsampname = struct.unpack("<26s", file.read(26))[0].replace('\x00', ' ').rstrip()
+        itsampconvertflags = struct.unpack("<B", file.read(1))[0]
+        itsampdefaultpan = struct.unpack("<B", file.read(1))[0]
+        itsamplength = struct.unpack("<L", file.read(4))[0]
+        itsamploopbegin = struct.unpack("<L", file.read(4))[0]
+        itsamploopend = struct.unpack("<L", file.read(4))[0]
+        itsampc5speed = struct.unpack("<L", file.read(4))[0]
+        itsampsustloopbegin = struct.unpack("<L", file.read(4))[0]
+        itsampsustloopend = struct.unpack("<L", file.read(4))[0]
+        itsampoffset = struct.unpack("<L", file.read(4))[0]
+        itsampvibspeed = struct.unpack("<B", file.read(1))[0]
+        itsampvibdepth = struct.unpack("<B", file.read(1))[0]
+        itsampvibrate = struct.unpack("<B", file.read(1))[0]
+        itsampvibtype = struct.unpack("<B", file.read(1))[0]
+
+        # Parse it into generic Sample
+        self.name = itsampname
+        self.filename = itsampfilename
+
+        if itsampdefaultpan & 128:
+            self.flags = self.flags | CHN_PANNING
+            itsampdefaultpan = itsampdefaultpan & 127
+
+        self.globalvol = MIN(itsampglobalvol, 64)
+        self.volume = MIN(itsampvolume, 64) * 4
+        self.panning = MIN(itsampdefaultpan, 64) * 4
+        self.length = itsamplength
+        self.loopbegin = itsamploopbegin
+        self.loopend = itsamploopend
+        self.c5speed = itsampc5speed
+        self.sustloopbegin = itsampsustloopbegin
+        self.sustloopend = itsampsustloopend
+
+        self.vibspeed = MIN(itsampvibspeed, 64)
+        self.vibdepth = MIN(itsampvibdepth, 32)
+        self.vibrate = itsampvibrate
+        self.vibtype = itsampvibtype
+
+        if itsampflags & 16: self.flags = self.flags | CHN_LOOP
+        if itsampflags & 32: self.flags = self.flags | CHN_SUSTAINLOOP
+        if itsampflags & 64: self.flags = self.flags | CHN_PINGPONGLOOP
+        if itsampflags & 128: self.flags = self.flags | CHN_PINGPONGSUSTAIN
+
+        # Fixing old IT bug of setting this flag incorrectly.
+        if cwtv < 0x0214: itsampflags = itsampflags & ~4
+
+        if itsampflags & 1:
+            if itsampflags & 8:
+                self.itsamploadflags = self.itsamploadflags | SF_M
+                self.itsamploadflags = self.itsamploadflags | (SF_IT214, SF_IT215)[itsampconvertflags & 4]
+            else:
+                self.itsamploadflags = self.itsamploadflags | (SF_M, SF_SS)[itsampflags & 4]
+                self.itsamploadflags = self.itsamploadflags | ((SF_PCMU, SF_PCMS)[itsampconvertflags & 1], SF_PCMD)[itsampconvertflags & 4]
+            
+            self.itsamploadflags = self.itsamploadflags | (SF_8, SF_16)[itsampflags & 2]
+            
+            super(ITSample, self).load(file, itsampoffset, self.itsamploadflags)
         else:
-            file.seek(offset)
-            
-            self.id = struct.unpack("<4s", file.read(4))[0]
-            self.filename = struct.unpack("<12s", file.read(12))[0]
-            self.ZERO = struct.unpack("<B", file.read(1))[0]
-            self.globalvol = struct.unpack("<B", file.read(1))[0]
-            self.flags = struct.unpack("<B", file.read(1))[0]
-            self.volume = struct.unpack("<B", file.read(1))[0]
-            self.name = struct.unpack("<26s", file.read(26))[0].replace('\x00', ' ').rstrip()
-            self.convertflags = struct.unpack("<B", file.read(1))[0]
-            self.defaultpan = struct.unpack("<B", file.read(1))[0]
-            self.length = struct.unpack("<L", file.read(4))[0]
-            self.loopbegin = struct.unpack("<L", file.read(4))[0]
-            self.loopend = struct.unpack("<L", file.read(4))[0]
-            self.c5speed = struct.unpack("<L", file.read(4))[0]
-            self.susloopbegin = struct.unpack("<L", file.read(4))[0]
-            self.susloopend = struct.unpack("<L", file.read(4))[0]
-            self.offset = struct.unpack("<L", file.read(4))[0]
-            self.vibspeed = struct.unpack("<B", file.read(1))[0]
-            self.vibdepth = struct.unpack("<B", file.read(1))[0]
-            self.vibrate = struct.unpack("<B", file.read(1))[0]
-            self.vibtype = struct.unpack("<B", file.read(1))[0]
-            
-            self.data = []            #TODO!
+            self.length = 0
 
 
 class IT(Module):
@@ -307,22 +337,15 @@ class IT(Module):
         else:
             f = open(filename, 'rb')
 
-            self.id = struct.unpack("<4s", f.read(4))[0]                       # 'IMPM'
+            self.id = struct.unpack("<4s", f.read(4))[0]                # 'IMPM'
             self.songname = struct.unpack("<26s", f.read(26))[0].replace('\x00', ' ').strip()      # Song title (padded with NULL)
-            self.RESERVED1 = struct.unpack("<H", f.read(2))[0]                # RESERVED (??)
-            self.ordernum = struct.unpack("<H", f.read(2))[0]                # Number of orders in song
-            self.instrumentnum = struct.unpack("<H", f.read(2))[0]             # Number of instruments in song
-            self.samplenum = struct.unpack("<H", f.read(2))[0]               # Number of samples in song
-            self.patternnum = struct.unpack("<H", f.read(2))[0]               # Number of patterns in song
-    
-            self.cwtv = []
-            self.cwtv.insert(0, int(hex(ord(f.read(1)))[2:]))
-            self.cwtv.insert(0, int(hex(ord(f.read(1)))[2:]))                      # Created with tracker version (IT y.xx = 0yxxh)
-        
-            self.cmwt = []                                                  # Compatible with tracker that's version greater than value
-            self.cmwt.insert(0, int(hex(ord(f.read(1)))[2:]))
-            self.cmwt.insert(0, int(hex(ord(f.read(1)))[2:]))               
-    
+            self.RESERVED1 = struct.unpack("<H", f.read(2))[0]          # RESERVED (??)
+            self.ordernum = struct.unpack("<H", f.read(2))[0]           # Number of orders in song
+            self.instrumentnum = struct.unpack("<H", f.read(2))[0]      # Number of instruments in song
+            self.samplenum = struct.unpack("<H", f.read(2))[0]          # Number of samples in song
+            self.patternnum = struct.unpack("<H", f.read(2))[0]         # Number of patterns in song
+            self.cwtv = struct.unpack("<H", f.read(2))[0]               # Created with tracker version (IT y.xx = 0yxxh)
+            self.cmwt = struct.unpack("<H", f.read(2))[0]               # Compatible with tracker that's version greater than value
             self.flags = struct.unpack("<H", f.read(2))[0]
             self.special = struct.unpack("<H", f.read(2))[0]
             self.globalvol = struct.unpack("<B", f.read(1))[0]
@@ -360,7 +383,7 @@ class IT(Module):
             self.instruments = []
             if self.instrumentoffset:
                 for offset in self.instrumentoffset:
-                    if self.cmwt[0] < 2:
+                    if self.cmwt < 0x0200:
                         self.instruments.append(ITInstrumentOld(f, offset))
                     else:
                         self.instruments.append(ITInstrument(f, offset))
@@ -368,7 +391,7 @@ class IT(Module):
             self.samples = []
             if self.sampleoffset:
                 for offset in self.sampleoffset:
-                    self.samples.append(ITSample(f, offset))
+                    self.samples.append(ITSample(f, offset, self.cwtv))
             
             self.patterns = []
             if self.patternoffset:
@@ -379,4 +402,3 @@ class IT(Module):
                         self.patterns.append(Pattern(f, offset))
                     
             f.close()
-

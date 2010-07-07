@@ -6,8 +6,8 @@ class Sample(object):
         self.length = 0
         self.loopbegin = 0
         self.loopend = 0
-        self.susloopbegin = 0
-        self.susloopend = 0
+        self.sustloopbegin = 0
+        self.sustloopend = 0
         self.c5speed = 8363
         self.panning = 0
         self.volume = 256
@@ -25,6 +25,9 @@ class Sample(object):
         self.adlibbytes = []
 
         self.data = []
+    
+    def load(self, file, offset, loadflags):
+        pass
 
 
 class Envelope(object):
@@ -131,113 +134,14 @@ class Note(object):
 
 class Pattern(object):
     """A pattern object"""
-    def __init__(self, file=None, offset=0, length=0, rows=64, channels=64):
-        self.length = length
+    def __init__(self, file=None, offset=0, rows=64, channels=64):
         self.rows = rows
-                
-        self.data = self.empty(self.rows, channels)
+        self.channels = channels
+        self.length = 0
+        self.data = self.empty(self.rows, self.channels)
         
-        if file:
-            file.seek(offset)
-            
-            self.length = struct.unpack("<H", file.read(2))[0]
-            self.rows = struct.unpack("<H", file.read(2))[0]
-            RESERVED = struct.unpack("<BBBB", file.read(4))
-            
-            lastnote = []
-            for i in range(channels):
-                lastnote.append(Note())
-                
-            lastmask = []
-            for i in range(channels):
-                lastmask.append(0)    
-                
-            curchannel = 0
-            currow = 0
-            channelvar = 0
-            maskvar = 0
-            temp = 0
-            
-            while currow < self.rows:
-                channelvar = struct.unpack("<B", file.read(1))[0]
-                if channelvar == 0: currow = currow + 1
-                
-                curchannel = (channelvar - 1) & 63
-                
-                if channelvar & 128:
-                    maskvar = struct.unpack("<B", file.read(1))[0]
-                    lastmask[curchannel] = maskvar
-                else:
-                    maskvar = lastmask[curchannel]
-                
-                if maskvar & 1:
-                    temp = struct.unpack("<B", file.read(1))[0]
-                    if temp >= 0 and temp < 121:
-                        self.data[currow][curchannel].note = temp + 1
-                    else:
-                        self.data[currow][curchannel].note = temp
-                    lastnote[curchannel].note = temp
-                
-                if maskvar & 2:
-                    self.data[currow][curchannel].instrument = struct.unpack("<B", file.read(1))[0]
-                    lastnote[curchannel].instrument = self.data[currow][curchannel].instrument
-                
-                if maskvar & 4:
-                    temp = struct.unpack("<B", file.read(1))[0]
-                    if temp >= 0 and temp <= 64:
-                        self.data[currow][curchannel].voleffect = 1
-                        self.data[currow][curchannel].volparam = temp
-                    elif temp >= 65 and temp <= 74:
-                        self.data[currow][curchannel].voleffect = 5
-                        self.data[currow][curchannel].volparam = temp - 65
-                    elif temp >= 75 and temp <= 84:
-                        self.data[currow][curchannel].voleffect = 6
-                        self.data[currow][curchannel].volparam = temp - 75
-                    elif temp >= 85 and temp <= 94:
-                        self.data[currow][curchannel].voleffect = 3
-                        self.data[currow][curchannel].volparam = temp - 85
-                    elif temp >= 95 and temp <= 104:
-                        self.data[currow][curchannel].voleffect = 4
-                        self.data[currow][curchannel].volparam = temp - 95
-                    elif temp >= 105 and temp <= 114:
-                        self.data[currow][curchannel].voleffect = 13
-                        self.data[currow][curchannel].volparam = temp - 105
-                    elif temp >= 115 and temp <= 124:
-                        self.data[currow][curchannel].voleffect = 12
-                        self.data[currow][curchannel].volparam = temp - 115
-                    elif temp >= 128 and temp <= 192:
-                        self.data[currow][curchannel].voleffect = 2
-                        self.data[currow][curchannel].volparam = temp - 128
-                    elif temp >= 193 and temp <= 202:
-                        self.data[currow][curchannel].voleffect = 11
-                        self.data[currow][curchannel].volparam = temp - 193
-                    elif temp >= 203 and temp <= 212:
-                        self.data[currow][curchannel].voleffect = 8
-                        self.data[currow][curchannel].volparam = temp - 203                                
-                    
-                    lastnote[curchannel].voleffect = self.data[currow][curchannel].voleffect
-                    lastnote[curchannel].volparam = self.data[currow][curchannel].volparam
+        if file: self.load(file, offset)
         
-                if maskvar & 8:
-                    self.data[currow][curchannel].effect = struct.unpack("<B", file.read(1))[0]
-                    self.data[currow][curchannel].param = struct.unpack("<B", file.read(1))[0]
-                    lastnote[curchannel].effect = self.data[currow][curchannel].effect
-                    lastnote[curchannel].param = self.data[currow][curchannel].param
-                    
-                if maskvar & 16:
-                    self.data[currow][curchannel].note = lastnote[curchannel].note
-                
-                if maskvar & 32:
-                    self.data[currow][curchannel].instrument = lastnote[curchannel].instrument
-                    
-                if maskvar & 64:
-                    self.data[currow][curchannel].voleffect = lastnote[curchannel].voleffect
-                    self.data[currow][curchannel].volparam = lastnote[curchannel].volparam
-                    
-                if maskvar & 128:
-                    self.data[currow][curchannel].effect = lastnote[curchannel].effect
-                    self.data[currow][curchannel].param = lastnote[curchannel].param
-                    
     def empty(self, rows, channels):
         pattern = []
         for row in range(rows):
@@ -245,6 +149,107 @@ class Pattern(object):
             for channel in range(channels):
                 pattern[row].append(Note())
         return pattern
+        
+    def load(self, file, offset):
+        file.seek(offset)
+            
+        self.length = struct.unpack("<H", file.read(2))[0]
+        self.rows = struct.unpack("<H", file.read(2))[0]
+        RESERVED = struct.unpack("<BBBB", file.read(4))
+            
+        lastnote = []
+        for i in range(self.channels):
+            lastnote.append(Note())
+                
+        lastmask = []
+        for i in range(self.channels):
+            lastmask.append(0)    
+                
+        curchannel = 0
+        currow = 0
+        channelvar = 0
+        maskvar = 0
+        temp = 0
+            
+        while currow < self.rows:
+            channelvar = struct.unpack("<B", file.read(1))[0]
+            if channelvar == 0: currow = currow + 1
+                
+            curchannel = (channelvar - 1) & 63
+            
+            if channelvar & 128:
+                maskvar = struct.unpack("<B", file.read(1))[0]
+                lastmask[curchannel] = maskvar
+            else:
+                maskvar = lastmask[curchannel]
+            
+            if maskvar & 1:
+                temp = struct.unpack("<B", file.read(1))[0]
+                if temp >= 0 and temp < 121:
+                    self.data[currow][curchannel].note = temp + 1
+                else:
+                    self.data[currow][curchannel].note = temp
+                lastnote[curchannel].note = temp
+                
+            if maskvar & 2:
+                self.data[currow][curchannel].instrument = struct.unpack("<B", file.read(1))[0]
+                lastnote[curchannel].instrument = self.data[currow][curchannel].instrument
+                
+            if maskvar & 4:
+                temp = struct.unpack("<B", file.read(1))[0]
+                if temp >= 0 and temp <= 64:
+                    self.data[currow][curchannel].voleffect = 1
+                    self.data[currow][curchannel].volparam = temp
+                elif temp >= 65 and temp <= 74:
+                    self.data[currow][curchannel].voleffect = 5
+                    self.data[currow][curchannel].volparam = temp - 65
+                elif temp >= 75 and temp <= 84:
+                    self.data[currow][curchannel].voleffect = 6
+                    self.data[currow][curchannel].volparam = temp - 75
+                elif temp >= 85 and temp <= 94:
+                    self.data[currow][curchannel].voleffect = 3
+                    self.data[currow][curchannel].volparam = temp - 85
+                elif temp >= 95 and temp <= 104:
+                    self.data[currow][curchannel].voleffect = 4
+                    self.data[currow][curchannel].volparam = temp - 95
+                elif temp >= 105 and temp <= 114:
+                    self.data[currow][curchannel].voleffect = 13
+                    self.data[currow][curchannel].volparam = temp - 105
+                elif temp >= 115 and temp <= 124:
+                    self.data[currow][curchannel].voleffect = 12
+                    self.data[currow][curchannel].volparam = temp - 115
+                elif temp >= 128 and temp <= 192:
+                    self.data[currow][curchannel].voleffect = 2
+                    self.data[currow][curchannel].volparam = temp - 128
+                elif temp >= 193 and temp <= 202:
+                    self.data[currow][curchannel].voleffect = 11
+                    self.data[currow][curchannel].volparam = temp - 193
+                elif temp >= 203 and temp <= 212:
+                    self.data[currow][curchannel].voleffect = 8
+                    self.data[currow][curchannel].volparam = temp - 203                                
+                
+                lastnote[curchannel].voleffect = self.data[currow][curchannel].voleffect
+                lastnote[curchannel].volparam = self.data[currow][curchannel].volparam
+        
+            if maskvar & 8:
+                self.data[currow][curchannel].effect = struct.unpack("<B", file.read(1))[0]
+                self.data[currow][curchannel].param = struct.unpack("<B", file.read(1))[0]
+                lastnote[curchannel].effect = self.data[currow][curchannel].effect
+                lastnote[curchannel].param = self.data[currow][curchannel].param
+                    
+            if maskvar & 16:
+                self.data[currow][curchannel].note = lastnote[curchannel].note
+                
+            if maskvar & 32:
+                self.data[currow][curchannel].instrument = lastnote[curchannel].instrument
+                    
+            if maskvar & 64:
+                self.data[currow][curchannel].voleffect = lastnote[curchannel].voleffect
+                self.data[currow][curchannel].volparam = lastnote[curchannel].volparam
+                    
+            if maskvar & 128:
+                self.data[currow][curchannel].effect = lastnote[curchannel].effect
+                self.data[currow][curchannel].param = lastnote[curchannel].param
 
 
 class Module(object):
