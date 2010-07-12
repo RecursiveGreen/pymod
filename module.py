@@ -1,4 +1,5 @@
 import struct
+from pymod.constants import *
 
 class Sample(object):
     """A simple sample object"""
@@ -27,6 +28,62 @@ class Sample(object):
         self.data = []
     
     def load(self, file, offset, loadflags):
+        if self.flags & CHN_ADLIB or self.length < 1 or not file:
+            self.data = []
+            return
+        
+        # Here we go. . .
+        file.seek(offset)
+        
+        # 1: 8-bit unsigned PCM data
+        if loadflags == SF(SF_PCMU, SF_8, SF_M, SF_LE):
+            for i in range(self.length):
+                self.data.append(struct.unpack("<b", file.read(1))[0] - 0x80)
+            self.adjustloops()
+            return
+    
+        # 2: 8-bit ADPCM data with linear table
+        if loadflags == SF(SF_PCMD, SF_8, SF_M, SF_LE):
+            delta = 0
+            for i in range(self.length):
+                delta = delta + struct.unpack("<b", file.read(1))[0]
+                self.data.append(delta)
+            self.adjustloops()
+            return
+        
+        # 4: 16-bit ADPCM data with linear table
+        if loadflags == SF(SF_PCMD, SF_16, SF_M, SF_LE):
+            ustmp = 0
+            delta16 = 0
+            for i in range(self.length):
+                ustmp = struct.unpack("<H", file.read(2))[0]
+                delta16 = delta16 + ustmp
+                self.data.append(struct.unpack("<h", struct.pack("<H", delta16))[0]) # ugly. . .
+            self.adjustloops()
+            return
+        
+        # 5: 16-bit signed PCM data
+        if loadflags == SF(SF_PCMS, SF_16, SF_M, SF_LE):
+            for i in range(self.length):
+                self.data.append(struct.unpack("<h", file.read(2))[0])
+            self.adjustloops()
+            return
+        
+        # 16-bit signed mono PCM motorola byte order
+        if loadflags == SF(SF_PCMS, SF_16, SF_M, SF_BE):
+            for i in range(self.length):
+                self.data.append(struct.unpack(">H", file.read(2))[0])
+            self.adjustloops()
+            return
+        
+        # 6: 16-bit unsigned PCM data
+        if loadflags == SF(SF_PCMU, SF_16, SF_M, SF_LE):
+            for i in range(self.length):
+                self.data.append(struct.unpack("<h", file.read(1))[0] - 0x8000)
+            self.adjustloops()
+            return
+    
+    def adjustloops(self):
         pass
 
 
@@ -95,161 +152,13 @@ class Note(object):
         self.effect = effect
         self.param = param
 
-    def __unicode__(self):
-        keys = ['C-', 'C#', 'D-', 'D#', 'E-', 'F-', 'F#', 'G-', 'G#', 'A-', 'A#', 'B-']
-        commands = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-        
-        if self.note == 0: ret1 = '...'
-        elif self.note > 0 and self.note <=120:
-            split = divmod(self.note-1, 12)
-            ret1 = '%s%s' % (keys[split[1]], str(split[0]))
-        elif self.note == 254: ret1 = '^^^'
-        elif self.note == 255: ret1 = '==='
-        else: ret1 = '~~~'
-
-        if self.instrument: ret2 = str(self.instrument).zfill(2)
-        else: ret2 = '..'
-
-        if self.voleffect == 0: ret3 = '..'
-        elif self.voleffect == 1: ret3 = str(self.volparam).zfill(2).upper()
-        elif self.voleffect == 2: ret3 = str(self.volparam + 128).zfill(2).upper()
-        elif self.voleffect == 3: ret3 = str(self.volparam + 85).zfill(2).upper()
-        elif self.voleffect == 4: ret3 = str(self.volparam + 95).zfill(2).upper()
-        elif self.voleffect == 5: ret3 = str(self.volparam + 65).zfill(2).upper()
-        elif self.voleffect == 6: ret3 = str(self.volparam + 75).zfill(2).upper()
-        elif self.voleffect == 8: ret3 = str(self.volparam + 203).zfill(2).upper()
-        elif self.voleffect == 11: ret3 = str(self.volparam + 193).zfill(2).upper()
-        elif self.voleffect == 12: ret3 = str(self.volparam + 115).zfill(2).upper()
-        elif self.voleffect == 13: ret3 = str(self.volparam + 105).zfill(2).upper()
-        
-        if self.effect: letter = commands[self.effect-1]
-        else: letter = '.'
-        ret4 = '%s%s' % (letter, hex(self.param)[2:].zfill(2).upper())
-        
-        return '%s %s %s %s' % (ret1, ret2, ret3, ret4)
-
-    def __repr__(self):
-        return self.__unicode__()
-
 
 class Pattern(object):
     """A pattern object"""
-    def __init__(self, file=None, offset=0, rows=64, channels=64):
+    def __init__(self, rows=64, channels=64):
         self.rows = rows
         self.channels = channels
-        self.length = 0
-        self.data = self.empty(self.rows, self.channels)
-        
-        if file: self.load(file, offset)
-        
-    def empty(self, rows, channels):
-        pattern = []
-        for row in range(rows):
-            pattern.append([])
-            for channel in range(channels):
-                pattern[row].append(Note())
-        return pattern
-        
-    def load(self, file, offset):
-        file.seek(offset)
-            
-        self.length = struct.unpack("<H", file.read(2))[0]
-        self.rows = struct.unpack("<H", file.read(2))[0]
-        RESERVED = struct.unpack("<BBBB", file.read(4))
-            
-        lastnote = []
-        for i in range(self.channels):
-            lastnote.append(Note())
-                
-        lastmask = []
-        for i in range(self.channels):
-            lastmask.append(0)    
-                
-        curchannel = 0
-        currow = 0
-        channelvar = 0
-        maskvar = 0
-        temp = 0
-            
-        while currow < self.rows:
-            channelvar = struct.unpack("<B", file.read(1))[0]
-            if channelvar == 0: currow = currow + 1
-                
-            curchannel = (channelvar - 1) & 63
-            
-            if channelvar & 128:
-                maskvar = struct.unpack("<B", file.read(1))[0]
-                lastmask[curchannel] = maskvar
-            else:
-                maskvar = lastmask[curchannel]
-            
-            if maskvar & 1:
-                temp = struct.unpack("<B", file.read(1))[0]
-                if temp >= 0 and temp < 121:
-                    self.data[currow][curchannel].note = temp + 1
-                else:
-                    self.data[currow][curchannel].note = temp
-                lastnote[curchannel].note = temp
-                
-            if maskvar & 2:
-                self.data[currow][curchannel].instrument = struct.unpack("<B", file.read(1))[0]
-                lastnote[curchannel].instrument = self.data[currow][curchannel].instrument
-                
-            if maskvar & 4:
-                temp = struct.unpack("<B", file.read(1))[0]
-                if temp >= 0 and temp <= 64:
-                    self.data[currow][curchannel].voleffect = 1
-                    self.data[currow][curchannel].volparam = temp
-                elif temp >= 65 and temp <= 74:
-                    self.data[currow][curchannel].voleffect = 5
-                    self.data[currow][curchannel].volparam = temp - 65
-                elif temp >= 75 and temp <= 84:
-                    self.data[currow][curchannel].voleffect = 6
-                    self.data[currow][curchannel].volparam = temp - 75
-                elif temp >= 85 and temp <= 94:
-                    self.data[currow][curchannel].voleffect = 3
-                    self.data[currow][curchannel].volparam = temp - 85
-                elif temp >= 95 and temp <= 104:
-                    self.data[currow][curchannel].voleffect = 4
-                    self.data[currow][curchannel].volparam = temp - 95
-                elif temp >= 105 and temp <= 114:
-                    self.data[currow][curchannel].voleffect = 13
-                    self.data[currow][curchannel].volparam = temp - 105
-                elif temp >= 115 and temp <= 124:
-                    self.data[currow][curchannel].voleffect = 12
-                    self.data[currow][curchannel].volparam = temp - 115
-                elif temp >= 128 and temp <= 192:
-                    self.data[currow][curchannel].voleffect = 2
-                    self.data[currow][curchannel].volparam = temp - 128
-                elif temp >= 193 and temp <= 202:
-                    self.data[currow][curchannel].voleffect = 11
-                    self.data[currow][curchannel].volparam = temp - 193
-                elif temp >= 203 and temp <= 212:
-                    self.data[currow][curchannel].voleffect = 8
-                    self.data[currow][curchannel].volparam = temp - 203                                
-                
-                lastnote[curchannel].voleffect = self.data[currow][curchannel].voleffect
-                lastnote[curchannel].volparam = self.data[currow][curchannel].volparam
-        
-            if maskvar & 8:
-                self.data[currow][curchannel].effect = struct.unpack("<B", file.read(1))[0]
-                self.data[currow][curchannel].param = struct.unpack("<B", file.read(1))[0]
-                lastnote[curchannel].effect = self.data[currow][curchannel].effect
-                lastnote[curchannel].param = self.data[currow][curchannel].param
-                    
-            if maskvar & 16:
-                self.data[currow][curchannel].note = lastnote[curchannel].note
-                
-            if maskvar & 32:
-                self.data[currow][curchannel].instrument = lastnote[curchannel].instrument
-                    
-            if maskvar & 64:
-                self.data[currow][curchannel].voleffect = lastnote[curchannel].voleffect
-                self.data[currow][curchannel].volparam = lastnote[curchannel].volparam
-                    
-            if maskvar & 128:
-                self.data[currow][curchannel].effect = lastnote[curchannel].effect
-                self.data[currow][curchannel].param = lastnote[curchannel].param
+        self.data = []
 
 
 class Module(object):
