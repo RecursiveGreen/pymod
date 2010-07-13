@@ -1,6 +1,20 @@
 PyMOD
------
+=====
 
 A library for reading/writing/playing music modules (MOD/IT/S3M/XM/etc.)
 
-More info coming soon. . .
+               ============================================
+
+**WARNING**
+This is still a major work in progress! Even though these files are coded to be
+opened read-only, I am not responsible for any module files loaded with this
+library that become damaged! **USE AT YOUR OWN RISK!**
+
+Here's a breakdown of current functionality:
+(r = Read, w = Write, x = Execute/Playback)
+
+Formats        Functions          Comments
+-------        ---------          --------
+  IT               r              Reading raw sample data still not implemented
+
+               ============================================
