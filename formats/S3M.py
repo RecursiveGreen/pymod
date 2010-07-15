@@ -18,7 +18,6 @@ class S3MNote(Note):
             ret1 = '%s%s' % (keys[split[1]], str(split[0]))
         elif self.note == 254: ret1 = '^^^'
         elif self.note == 255: ret1 = '==='
-        else: ret1 = '~~~'
 
         if self.instrument: ret2 = str(self.instrument).zfill(2)
         else: ret2 = '..'
@@ -37,7 +36,7 @@ class S3MNote(Note):
 
 
 class S3MPattern(Pattern):
-    """The definition of the IT pattern"""
+    """The definition of the S3M pattern"""
     def __init__(self, file=None, offset=0, rows=64, channels=32):
         super(S3MPattern, self).__init__(rows, channels)
         self.length = 0
