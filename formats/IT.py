@@ -23,17 +23,17 @@ class ITNote(Note):
         if self.instrument: ret2 = str(self.instrument).zfill(2)
         else: ret2 = '..'
 
-        if self.voleffect == 0: ret3 = '..'
-        elif self.voleffect == 1: ret3 = str(self.volparam).zfill(2).upper()
-        elif self.voleffect == 2: ret3 = str(self.volparam + 128).zfill(2).upper()
-        elif self.voleffect == 3: ret3 = str(self.volparam + 85).zfill(2).upper()
-        elif self.voleffect == 4: ret3 = str(self.volparam + 95).zfill(2).upper()
-        elif self.voleffect == 5: ret3 = str(self.volparam + 65).zfill(2).upper()
-        elif self.voleffect == 6: ret3 = str(self.volparam + 75).zfill(2).upper()
-        elif self.voleffect == 8: ret3 = str(self.volparam + 203).zfill(2).upper()
-        elif self.voleffect == 11: ret3 = str(self.volparam + 193).zfill(2).upper()
-        elif self.voleffect == 12: ret3 = str(self.volparam + 115).zfill(2).upper()
-        elif self.voleffect == 13: ret3 = str(self.volparam + 105).zfill(2).upper()
+        if self.voleffect == VOLFX_NONE: ret3 = '..'
+        elif self.voleffect == VOLFX_VOLUME: ret3 = str(self.volparam).zfill(2).upper()
+        elif self.voleffect == VOLFX_PANNING: ret3 = str(self.volparam + 128).zfill(2).upper()
+        elif self.voleffect == VOLFX_VOLSLIDEUP: ret3 = str(self.volparam + 85).zfill(2).upper()
+        elif self.voleffect == VOLFX_VOLSLIDEDOWN: ret3 = str(self.volparam + 95).zfill(2).upper()
+        elif self.voleffect == VOLFX_FINEVOLUP: ret3 = str(self.volparam + 65).zfill(2).upper()
+        elif self.voleffect == VOLFX_FINEVOLDOWN: ret3 = str(self.volparam + 75).zfill(2).upper()
+        elif self.voleffect == VOLFX_VIBRATODEPTH: ret3 = str(self.volparam + 203).zfill(2).upper()
+        elif self.voleffect == VOLFX_TONEPORTAMENTO: ret3 = str(self.volparam + 193).zfill(2).upper()
+        elif self.voleffect == VOLFX_PORTAUP: ret3 = str(self.volparam + 115).zfill(2).upper()
+        elif self.voleffect == VOLFX_PORTADOWN: ret3 = str(self.volparam + 105).zfill(2).upper()
         
         if self.effect: letter = commands[self.effect-1]
         else: letter = '.'
@@ -114,34 +114,34 @@ class ITPattern(Pattern):
             if maskvar & 4:
                 temp = struct.unpack("<B", file.read(1))[0]
                 if temp >= 0 and temp <= 64:
-                    self.data[currow][curchannel].voleffect = 1
+                    self.data[currow][curchannel].voleffect = VOLFX_VOLUME
                     self.data[currow][curchannel].volparam = temp
                 elif temp >= 65 and temp <= 74:
-                    self.data[currow][curchannel].voleffect = 5
+                    self.data[currow][curchannel].voleffect = VOLFX_FINEVOLUP
                     self.data[currow][curchannel].volparam = temp - 65
                 elif temp >= 75 and temp <= 84:
-                    self.data[currow][curchannel].voleffect = 6
+                    self.data[currow][curchannel].voleffect = VOLFX_FINEVOLDOWN
                     self.data[currow][curchannel].volparam = temp - 75
                 elif temp >= 85 and temp <= 94:
-                    self.data[currow][curchannel].voleffect = 3
+                    self.data[currow][curchannel].voleffect = VOLFX_VOLSLIDEUP
                     self.data[currow][curchannel].volparam = temp - 85
                 elif temp >= 95 and temp <= 104:
-                    self.data[currow][curchannel].voleffect = 4
+                    self.data[currow][curchannel].voleffect = VOLFX_VOLSLIDEDOWN
                     self.data[currow][curchannel].volparam = temp - 95
                 elif temp >= 105 and temp <= 114:
-                    self.data[currow][curchannel].voleffect = 13
+                    self.data[currow][curchannel].voleffect = VOLFX_PORTADOWN
                     self.data[currow][curchannel].volparam = temp - 105
                 elif temp >= 115 and temp <= 124:
-                    self.data[currow][curchannel].voleffect = 12
+                    self.data[currow][curchannel].voleffect = VOLFX_PORTAUP
                     self.data[currow][curchannel].volparam = temp - 115
                 elif temp >= 128 and temp <= 192:
-                    self.data[currow][curchannel].voleffect = 2
+                    self.data[currow][curchannel].voleffect = VOLFX_PANNING
                     self.data[currow][curchannel].volparam = temp - 128
                 elif temp >= 193 and temp <= 202:
-                    self.data[currow][curchannel].voleffect = 11
+                    self.data[currow][curchannel].voleffect = VOLFX_TONEPORTAMENTO
                     self.data[currow][curchannel].volparam = temp - 193
                 elif temp >= 203 and temp <= 212:
-                    self.data[currow][curchannel].voleffect = 8
+                    self.data[currow][curchannel].voleffect = VOLFX_VIBRATODEPTH
                     self.data[currow][curchannel].volparam = temp - 203                                
                 
                 lastnote[curchannel].voleffect = self.data[currow][curchannel].voleffect
@@ -482,9 +482,9 @@ class IT(Module):
             self.patternnum = 0
             self.cwtv = 0x0214
             self.cmwt = 0x0214
-            self.flags = []
-            self.special = []
-            self.globalovl = 0
+            self.flags = 0
+            self.special = 0
+            self.globalvol = 0
             self.mixvol = 0
             self.speed = 0
             self.tempo = 0
