@@ -16,5 +16,6 @@ Here's a breakdown of current functionality:
 Formats        Functions          Comments
 -------        ---------          --------
   IT               r              Reading raw sample data still not implemented
+  S3M              r              Reading raw sample data still not implemented
 
                ============================================
