@@ -53,12 +53,10 @@ class Sample(object):
         
         # 4: 16-bit ADPCM data with linear table
         if loadflags == SF(SF_PCMD, SF_16, SF_M, SF_LE):
-            ustmp = 0
             delta16 = 0
             for i in range(self.length):
-                ustmp = struct.unpack("<H", file.read(2))[0]
-                delta16 = delta16 + ustmp
-                self.data.append(struct.unpack("<h", struct.pack("<H", delta16))[0]) # ugly. . .
+                delta16 = delta16 + struct.unpack("<h", file.read(2))[0]
+                self.data.append(delta16)
             self.adjustloops()
             return
         
