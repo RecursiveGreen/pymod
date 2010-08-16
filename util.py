@@ -7,3 +7,6 @@ def MAX(a, b):
 
 def CLAMP(x, l, h):
     return ((x, l)[x < l], h)[x > h]
+
+def transpose_to_frequency(transp, ftune):
+    return 8363.0 * pow(2, (transp * 128.0 + ftune) / 1536.0)
