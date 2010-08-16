@@ -17,5 +17,6 @@ Formats        Functions          Comments
 -------        ---------          --------
   IT               r              Reading raw sample data still not implemented
   S3M              r              Reading raw sample data still not implemented
+  XM               r              
 
                ============================================
