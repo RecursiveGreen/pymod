@@ -336,11 +336,6 @@ class XM(Module):
             
             self.orders = list(struct.unpack("<256B", f.read(256)))
             
-            #self.samples = []
-            #if self.sampleoffset:
-            #    for offset in self.sampleoffset:
-            #        self.samples.append(S3MSample(f, offset, self.fileformat))
-            
             self.patterns = []
             if self.patternnum:
                 for num in range(self.patternnum):
