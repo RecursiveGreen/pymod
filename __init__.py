@@ -1,1 +1,1 @@
-__all__ = ['formats', 'constants', 'module', 'util']
+__all__ = ['formats', 'constants', 'module', 'tables', 'util']
