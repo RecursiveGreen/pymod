@@ -41,8 +41,15 @@ class Sample(object):
                 self.data.append(struct.unpack("<b", file.read(1))[0] - 0x80)
             self.adjustloops()
             return
+        
+        # 2: 8-bit signed PCM data
+        if loadflags == SF(SF_PCMS, SF_8, SF_M, SF_LE):
+            for i in range(self.length):
+                self.data.append(struct.unpack("<b", file.read(1))[0])
+            self.adjustloops()
+            return
     
-        # 2: 8-bit ADPCM data with linear table
+        # 3: 8-bit ADPCM data with linear table
         if loadflags == SF(SF_PCMD, SF_8, SF_M, SF_LE):
             delta = 0
             for i in range(self.length):
