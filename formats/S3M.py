@@ -116,7 +116,7 @@ class S3MSample(Sample):
         if file: self.load(file, offset, ffi)
         
     def load(self, file, offset, ffi):
-        #Load the S3M sample headers
+        # Load the S3M sample headers
         file.seek(offset)
         
         s3msamptype = struct.unpack("<B", file.read(1))[0]
