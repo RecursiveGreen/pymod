@@ -398,7 +398,7 @@ class ITSample(Sample):
         if file: self.load(file, offset, cwtv)
         
     def load(self, file, offset, cwtv):
-        #Load the IT sample headers
+        # Load the IT sample headers
         file.seek(offset)
             
         itsampid = struct.unpack("<4s", file.read(4))[0]
