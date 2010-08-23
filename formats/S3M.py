@@ -198,6 +198,7 @@ class S3M(Module):
         else:
             f = open(filename, 'rb')
             
+            self.filename = filename
             self.name = struct.unpack("<28s", f.read(28))[0]          # Song title (padded with NULL)
             self.b1Atch = struct.unpack("<B", f.read(1))[0]           # 0x1A
             self.type = struct.unpack("<B", f.read(1))[0]             # File Type (16 = ST3)
@@ -245,4 +246,21 @@ class S3M(Module):
                         self.patterns.append(S3MPattern(f, offset))
                     
             f.close()
+
+    def detect(filename):
+        f = open(filename, 'rb')
+        f.seek(44)
+        id = struct.unpack("<4s", f.read(4))[0]
+        f.close()
+        if id == 'SCRM':
+            return 2
+        else:
+            return 0
+    detect = staticmethod(detect)
+
+    def __unicode__(self):
+        return 'S3M Module (%s)' % ((self.getname(), self.filename)[bool(self.getname() == '')])
+    
+    def __repr__(self):
+        return self.__unicode__()
 

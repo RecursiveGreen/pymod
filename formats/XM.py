@@ -302,8 +302,8 @@ class XM(Module):
     def __init__(self, filename=None):
         super(XM, self).__init__()
         if not filename:
-            self.id = 'Extended module: '   # 17 char length (stupid space)
-            self.b1Atch = 0x1A              # byte 1A temp char. . . ;)
+            self.id = 'Extended Module: '        # 17 char length (stupid space)
+            self.b1Atch = 0x1A                   # byte 1A temp char. . . ;)
             self.tracker = 'FastTracker v2.00'
             self.cwtv = 0x0104
             self.headerlength = 0
@@ -312,6 +312,7 @@ class XM(Module):
         else:
             f = open(filename, 'rb')
             
+            self.filename = filename
             self.id = struct.unpack("<17s", f.read(17))[0]          # 'Extended module: '
             self.name = struct.unpack("<20s", f.read(20))[0]        # Song title (padded with NULL)
             self.b1Atch = struct.unpack("<B", f.read(1))[0]         # 0x1A
@@ -341,6 +342,22 @@ class XM(Module):
 
             f.close()
             
+    def detect(filename):
+        f = open(filename, 'rb')
+        id = struct.unpack("<17s", f.read(17))[0]
+        f.close()
+        if id == 'Extended Module: ':
+            return 2
+        else:
+            return 0
+    detect = staticmethod(detect)
+            
     def gettracker(self):
         return self.tracker.replace('\x00', ' ').strip()
+    
+    def __unicode__(self):
+        return 'XM Module (%s)' % ((self.getname(), self.filename)[bool(self.getname() == '')])
+    
+    def __repr__(self):
+        return self.__unicode__()
 

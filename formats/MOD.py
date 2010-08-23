@@ -4,6 +4,52 @@ from pymod.module import *
 from pymod.tables import *
 from pymod.util import *
 
+MOD_TYPES = (
+    ('M.K.', 'Amiga-NewTracker', 4),
+    ('M!K!', 'Amiga-ProTracker', 4),
+    ('M&K!', 'Amiga-NoiseTracker', 4),
+    ('N.T.', 'Amiga-NoiseTracker?', 4),    # ???, mentioned in libModplug
+    ('CD81', '8 Channel Falcon', 8),
+    ('OCTA', 'Amiga Oktalyzer', 8),        # SchismTracker/libModplug have
+    ('OKTA', 'Amiga Oktalyzer', 8),        # 'C' or 'K', but not both
+    ('FLT4', '4 Channel Startrekker', 4),
+    ('FLT8', '8 Channel Startrekker', 8),
+    ('2CHN', '2 Channel MOD', 2),
+    ('3CHN', '3 Channel MOD', 3),          # Does this show up ever?
+    ('4CHN', '4 Channel MOD', 4),
+    ('5CHN', '5 Channel TakeTracker', 5),
+    ('6CHN', '6 Channel MOD', 6),
+    ('7CHN', '7 Channel TakeTracker', 7),
+    ('8CHN', '8 Channel MOD', 8),
+    ('9CHN', '9 Channel TakeTracker', 9),
+    ('10CH', '10 Channel MOD', 10),
+    ('11CH', '11 Channel TakeTracker', 11),
+    ('12CH', '12 Channel MOD', 12),
+    ('13CH', '13 Channel TakeTracker', 13),
+    ('14CH', '14 Channel MOD', 14),
+    ('15CH', '15 Channel TakeTracker', 15),
+    ('16CH', '16 Channel MOD', 16),
+    ('18CH', '18 Channel MOD', 18),
+    ('20CH', '20 Channel MOD', 20),
+    ('22CH', '22 Channel MOD', 22),
+    ('24CH', '24 Channel MOD', 24),
+    ('26CH', '26 Channel MOD', 26),
+    ('28CH', '28 Channel MOD', 28),
+    ('30CH', '30 Channel MOD', 30),
+    ('32CH', '32 Channel MOD', 32),
+    ('16CN', '16 Channel MOD', 16),        # Not certain where these two
+    ('32CN', '32 Channel MOD', 32),        # come from. (libModplug)
+    ('TDZ1', '1 Channel TakeTracker', 1),
+    ('TDZ2', '2 Channel TakeTracker', 2),
+    ('TDZ3', '3 Channel TakeTracker', 3),
+    ('TDZ4', '4 Channel MOD', 4),
+    ('TDZ5', '5 Channel MOD', 5),
+    ('TDZ6', '6 Channel MOD', 6),
+    ('TDZ7', '7 Channel MOD', 7),
+    ('TDZ8', '8 Channel MOD', 8),
+    ('TDZ9', '9 Channel MOD', 9)
+)
+
 class MODNote(Note):
     """The definition of a generic MOD note and it's effects"""
     def __init__(self, pattdata=[]):
@@ -114,52 +160,6 @@ class MODSample(Sample):
 
 class MOD(Module):
     """A class that holds a generic MOD file"""
-    MOD_TYPES = (
-        ('M.K.', 'Amiga-NewTracker', 4),
-        ('M!K!', 'Amiga-ProTracker', 4),
-        ('M&K!', 'Amiga-NoiseTracker', 4),
-        ('N.T.', 'Amiga-NoiseTracker?', 4),    # ???, mentioned in libModplug
-        ('CD81', '8 Channel Falcon', 8),
-        ('OCTA', 'Amiga Oktalyzer', 8),        # SchismTracker/libModplug have
-        ('OKTA', 'Amiga Oktalyzer', 8),        # 'C' or 'K', but not both
-        ('FLT4', '4 Channel Startrekker', 4),
-        ('FLT8', '8 Channel Startrekker', 8),
-        ('2CHN', '2 Channel MOD', 2),
-        ('3CHN', '3 Channel MOD', 3),          # Does this show up ever?
-        ('4CHN', '4 Channel MOD', 4),
-        ('5CHN', '5 Channel TakeTracker', 5),
-        ('6CHN', '6 Channel MOD', 6),
-        ('7CHN', '7 Channel TakeTracker', 7),
-        ('8CHN', '8 Channel MOD', 8),
-        ('9CHN', '9 Channel TakeTracker', 9),
-        ('10CH', '10 Channel MOD', 10),
-        ('11CH', '11 Channel TakeTracker', 11),
-        ('12CH', '12 Channel MOD', 12),
-        ('13CH', '13 Channel TakeTracker', 13),
-        ('14CH', '14 Channel MOD', 14),
-        ('15CH', '15 Channel TakeTracker', 15),
-        ('16CH', '16 Channel MOD', 16),
-        ('18CH', '18 Channel MOD', 18),
-        ('20CH', '20 Channel MOD', 20),
-        ('22CH', '22 Channel MOD', 22),
-        ('24CH', '24 Channel MOD', 24),
-        ('26CH', '26 Channel MOD', 26),
-        ('28CH', '28 Channel MOD', 28),
-        ('30CH', '30 Channel MOD', 30),
-        ('32CH', '32 Channel MOD', 32),
-        ('16CN', '16 Channel MOD', 16),        # Not certain where these two
-        ('32CN', '32 Channel MOD', 32),        # come from. (libModplug)
-        ('TDZ1', '1 Channel TakeTracker', 1),
-        ('TDZ2', '2 Channel TakeTracker', 2),
-        ('TDZ3', '3 Channel TakeTracker', 3),
-        ('TDZ4', '4 Channel MOD', 4),
-        ('TDZ5', '5 Channel MOD', 5),
-        ('TDZ6', '6 Channel MOD', 6),
-        ('TDZ7', '7 Channel MOD', 7),
-        ('TDZ8', '8 Channel MOD', 8),
-        ('TDZ9', '9 Channel MOD', 9)
-    )
-        
     def __init__(self, filename=None):
         super(MOD, self).__init__()
         if not filename:
@@ -171,11 +171,12 @@ class MOD(Module):
         else:
             f = open(filename, 'rb')        # NOTE: MOD files should be big-endian!
             
+            self.filename = filename
             f.seek(1080)                    # Magic number is in middle of file.
             magic = struct.unpack(">4s", f.read(4))[0]
             
             self.id = ''
-            for TYPE in self.MOD_TYPES:
+            for TYPE in MOD_TYPES:
                 if magic == TYPE[0]:
                     self.id = magic
                     self.tracker = TYPE[1]
@@ -242,4 +243,26 @@ class MOD(Module):
                 self.samples[num].load(f, 1)         # Loading sample data
 
             f.close()
+    
+    def detect(filename):
+        f = open(filename, 'rb')
+        f.seek(1080)
+        magic = struct.unpack(">4s", f.read(4))[0]
+        f.close()
+        
+        for TYPE in MOD_TYPES:
+            if magic == TYPE[0]:
+                return 2
+        
+        if filename.lower().endswith('.mod') or filename.lower().startswith('mod.'):
+            return 1
+        else:
+            return 0
+    detect = staticmethod(detect)
+
+    def __unicode__(self):
+        return 'MOD Module (%s)' % ((self.getname(), self.filename)[bool(self.getname() == '')])
+    
+    def __repr__(self):
+        return self.__unicode__()
 

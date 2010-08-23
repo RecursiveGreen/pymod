@@ -185,7 +185,7 @@ class ITEnvelope(Envelope):
             itsustloopend = struct.unpack("<B", file.read(1))[0]
             itnodepoints =[]
         
-            if type ==0:
+            if type == 0:
                 for i in range(25):
                     itnodepoints.append(list(struct.unpack("<BH", file.read(3))))
             else:
@@ -494,6 +494,7 @@ class IT(Module):
         else:
             f = open(filename, 'rb')
 
+            self.filename = filename
             self.id = struct.unpack("<4s", f.read(4))[0]            # 'IMPM'
             self.name = struct.unpack("<26s", f.read(26))[0]        # Song title (padded with NULL)
             self.RESERVED1 = struct.unpack("<H", f.read(2))[0]      # RESERVED (??)
@@ -560,6 +561,22 @@ class IT(Module):
                     
             f.close()
             
+    def detect(filename):
+        f = open(filename, 'rb')
+        id = struct.unpack("<4s", f.read(4))[0]
+        f.close()
+        if id == 'IMPM':
+            return 2
+        else:
+            return 0
+    detect = staticmethod(detect)
+    
     def getmessage(self):
         return self.message.replace('\r', '\n').replace('\x00', ' ').rstrip()
+    
+    def __unicode__(self):
+        return 'IT Module (%s)' % ((self.getname(), self.filename)[bool(self.getname() == '')])
+    
+    def __repr__(self):
+        return self.__unicode__()
 
