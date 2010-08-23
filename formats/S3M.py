@@ -123,14 +123,14 @@ class S3MSample(Sample):
         s3msampfilename = struct.unpack("<12s", file.read(12))[0]
         s3msampmemseg = list(struct.unpack("<3B", file.read(3)))
         
-        if s3msamptype == 0:                # No sample
+        if s3msamptype == 0:            # No sample
             file.seek(12, 1)            # skip loop info
             s3msampvolume = struct.unpack("<B", file.read(1))[0]
             file.seek(3, 1)             # unused byte
             s3msamplength = 0
             s3msamploopbegin = 0
             s3msamploopend = 0
-        elif s3msamptype == 1:              # regular sample
+        elif s3msamptype == 1:          # regular sample
             self.s3msampoffset = (s3msampmemseg[1] | (s3msampmemseg[2] << 8) | (s3msampmemseg[0] << 16)) * 16
             s3msamplength = struct.unpack("<L", file.read(4))[0]
             s3msamploopbegin = struct.unpack("<L", file.read(4))[0]
@@ -154,7 +154,7 @@ class S3MSample(Sample):
 
         s3msampc5speed = struct.unpack("<L", file.read(4))[0]
         file.seek(12, 1)             # skip unused bytes & int. memory variables
-        s3msampname = struct.unpack("<28s", file.read(28))[0].replace('\x00', ' ').rstrip()
+        s3msampname = struct.unpack("<28s", file.read(28))[0]
         
         if s3msamptype == 0:            # none if unused, otherwise SCRS or SCRI
             s3msampid = ''
@@ -177,45 +177,38 @@ class S3MSample(Sample):
 class S3M(Module):
     """A class that holds an S3M module file"""
     def __init__(self, filename=None):
+        super(S3M, self).__init__()
         if not filename:
-            self.songname = ''
             self.b1Atch = 0x1A              # byte 1A temp char. . . ;)
             self.type = 16
             self.RESERVED1 = 0
-            self.ordernum = 0
-            self.samplenum = 0
-            self.patternnum = 0
-            self.flags = 0
             self.cwtv = 0x1320
             self.fileformat = 2
             self.id = 'SCRM'
             self.globalvol = 0
-            self.speed = 0
-            self.tempo = 0
             self.mastervol = 0
             self.ultraclick = 0
             self.defaultpan = 0
             self.RESERVED2 = []
             self.special = 0
             self.channelset = []
-            self.orders = []
             self.sampleoffset = []
             self.patternoffset = []
-            self.channelpan = []            
+            self.channelpan = []       
         else:
             f = open(filename, 'rb')
             
-            self.songname = struct.unpack("<28s", f.read(28))[0].replace('\x00', ' ').strip()    # Song title (padded with NULL)
-            self.b1Atch = struct.unpack("<B", f.read(1))[0]             # 0x1A
-            self.type = struct.unpack("<B", f.read(1))[0]               # File Type (16 = ST3)
-            self.RESERVED1 = struct.unpack("<H", f.read(2))[0]          # RESERVED (??)
-            self.ordernum = struct.unpack("<H", f.read(2))[0]           # Number of orders in song
-            self.samplenum = struct.unpack("<H", f.read(2))[0]          # Number of samples in song
-            self.patternnum = struct.unpack("<H", f.read(2))[0]         # Number of patterns in song
+            self.name = struct.unpack("<28s", f.read(28))[0]          # Song title (padded with NULL)
+            self.b1Atch = struct.unpack("<B", f.read(1))[0]           # 0x1A
+            self.type = struct.unpack("<B", f.read(1))[0]             # File Type (16 = ST3)
+            self.RESERVED1 = struct.unpack("<H", f.read(2))[0]        # RESERVED (??)
+            self.ordernum = struct.unpack("<H", f.read(2))[0]         # Number of orders in song
+            self.samplenum = struct.unpack("<H", f.read(2))[0]        # Number of samples in song
+            self.patternnum = struct.unpack("<H", f.read(2))[0]       # Number of patterns in song
             self.flags = struct.unpack("<H", f.read(2))[0]
-            self.cwtv = struct.unpack("<H", f.read(2))[0]               # Created with tracker version (S3M y.xx = 1yxxh)
+            self.cwtv = struct.unpack("<H", f.read(2))[0]             # Created with tracker version (S3M y.xx = 1yxxh)
             self.fileformat = struct.unpack("<H", f.read(2))[0]
-            self.id = struct.unpack("<4s", f.read(4))[0]                # 'SCRM'
+            self.id = struct.unpack("<4s", f.read(4))[0]              # 'SCRM'
             self.globalvol = struct.unpack("<B", f.read(1))[0]
             self.speed = struct.unpack("<B", f.read(1))[0]
             self.tempo = struct.unpack("<B", f.read(1))[0]
@@ -252,3 +245,4 @@ class S3M(Module):
                         self.patterns.append(S3MPattern(f, offset))
                     
             f.close()
+

@@ -234,7 +234,7 @@ class ITInstrumentOld(Instrument):
         file.seek(offset)
             
         itinstoldid = struct.unpack("<4s", file.read(4))[0]
-        itinstoldfilename = struct.unpack("<12s", file.read(12))[0].strip()
+        itinstoldfilename = struct.unpack("<12s", file.read(12))[0]
         itinstoldZERO = struct.unpack("<B", file.read(1))[0]
         itinstoldflags = struct.unpack("<B", file.read(1))[0]
         itinstoldvolloopbegin = struct.unpack("<B", file.read(1))[0]
@@ -248,7 +248,7 @@ class ITInstrumentOld(Instrument):
         self.itinstoldtrackerver = struct.unpack("<H", file.read(2))[0]
         self.itinstoldnumsamples = struct.unpack("<B", file.read(1))[0]
         itinstoldRESERVED2 = struct.unpack("<B", file.read(1))[0]
-        itinstoldname = struct.unpack("<26s", file.read(26))[0].replace('\x00', ' ').rstrip()
+        itinstoldname = struct.unpack("<26s", file.read(26))[0]
         itinstoldRESERVED3 = list(struct.unpack("<HHH", file.read(6)))
             
         itinstoldnotekeytable = []
@@ -333,7 +333,7 @@ class ITInstrument(Instrument):
         self.itinsttrackerver = struct.unpack("<H", file.read(2))[0]
         self.itinstnumsamples = struct.unpack("<B", file.read(1))[0]
         itinstRESERVED1 = struct.unpack("<B", file.read(1))[0]
-        itinstname = struct.unpack("<26s", file.read(26))[0].replace('\x00', ' ').rstrip()
+        itinstname = struct.unpack("<26s", file.read(26))[0]
         itinstinitfiltercut = struct.unpack("<B", file.read(1))[0]
         itinstinitfilterres = struct.unpack("<B", file.read(1))[0]
         itinstmidichannel = struct.unpack("<B", file.read(1))[0]
@@ -407,7 +407,7 @@ class ITSample(Sample):
         itsampglobalvol = struct.unpack("<B", file.read(1))[0]
         itsampflags = struct.unpack("<B", file.read(1))[0]
         itsampvolume = struct.unpack("<B", file.read(1))[0]
-        itsampname = struct.unpack("<26s", file.read(26))[0].replace('\x00', ' ').rstrip()
+        itsampname = struct.unpack("<26s", file.read(26))[0]
         itsampconvertflags = struct.unpack("<B", file.read(1))[0]
         itsampdefaultpan = struct.unpack("<B", file.read(1))[0]
         itsamplength = struct.unpack("<L", file.read(4))[0]
@@ -470,24 +470,16 @@ class ITSample(Sample):
 
 class IT(Module):
     """A class that holds an IT module file"""
-    
     def __init__(self, filename=None):
+        super(IT, self).__init__()
         if not filename:
             self.id = 'IMPM'
-            self.songname = ''
             self.RESERVED1 = 0
-            self.ordernum = 0
-            self.instrumentnum = 0
-            self.samplenum = 0
-            self.patternnum = 0
             self.cwtv = 0x0214
             self.cmwt = 0x0214
-            self.flags = 0
             self.special = 0
             self.globalvol = 0
             self.mixvol = 0
-            self.speed = 0
-            self.tempo = 0
             self.panningsep = 0
             self.midipwd = 0
             self.messagelen = 0
@@ -496,22 +488,21 @@ class IT(Module):
             self.message = ''
             self.channelpan = []
             self.channelvol = []
-            self.orders = []
             self.instrumentoffset = []
             self.sampleoffset = []
             self.patternoffset = []
         else:
             f = open(filename, 'rb')
 
-            self.id = struct.unpack("<4s", f.read(4))[0]                # 'IMPM'
-            self.songname = struct.unpack("<26s", f.read(26))[0].replace('\x00', ' ').strip()      # Song title (padded with NULL)
-            self.RESERVED1 = struct.unpack("<H", f.read(2))[0]          # RESERVED (??)
-            self.ordernum = struct.unpack("<H", f.read(2))[0]           # Number of orders in song
-            self.instrumentnum = struct.unpack("<H", f.read(2))[0]      # Number of instruments in song
-            self.samplenum = struct.unpack("<H", f.read(2))[0]          # Number of samples in song
-            self.patternnum = struct.unpack("<H", f.read(2))[0]         # Number of patterns in song
-            self.cwtv = struct.unpack("<H", f.read(2))[0]               # Created with tracker version (IT y.xx = 0yxxh)
-            self.cmwt = struct.unpack("<H", f.read(2))[0]               # Compatible with tracker that's version greater than value
+            self.id = struct.unpack("<4s", f.read(4))[0]            # 'IMPM'
+            self.name = struct.unpack("<26s", f.read(26))[0]        # Song title (padded with NULL)
+            self.RESERVED1 = struct.unpack("<H", f.read(2))[0]      # RESERVED (??)
+            self.ordernum = struct.unpack("<H", f.read(2))[0]       # Number of orders in song
+            self.instrumentnum = struct.unpack("<H", f.read(2))[0]  # Number of instruments in song
+            self.samplenum = struct.unpack("<H", f.read(2))[0]      # Number of samples in song
+            self.patternnum = struct.unpack("<H", f.read(2))[0]     # Number of patterns in song
+            self.cwtv = struct.unpack("<H", f.read(2))[0]           # Created with tracker version (IT y.xx = 0yxxh)
+            self.cmwt = struct.unpack("<H", f.read(2))[0]           # Compatible with tracker that's version greater than value
             self.flags = struct.unpack("<H", f.read(2))[0]
             self.special = struct.unpack("<H", f.read(2))[0]
             self.globalvol = struct.unpack("<B", f.read(1))[0]
@@ -544,7 +535,7 @@ class IT(Module):
             self.message = ''
             if self.messagelen > 0 and self.messageoffset > 0:
                 f.seek(self.messageoffset)
-                self.message = struct.unpack("<%is" % (self.messagelen), f.read(self.messagelen))[0].replace('\r', '\n').replace('\x00', ' ').rstrip()
+                self.message = struct.unpack("<%is" % (self.messagelen), f.read(self.messagelen))[0]
             
             self.instruments = []
             if self.instrumentoffset:
@@ -568,3 +559,7 @@ class IT(Module):
                         self.patterns.append(ITPattern(f, offset))
                     
             f.close()
+            
+    def getmessage(self):
+        return self.message.replace('\r', '\n').replace('\x00', ' ').rstrip()
+

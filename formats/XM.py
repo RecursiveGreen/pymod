@@ -166,7 +166,7 @@ class XMSample(Sample):
             xmsamppanning = struct.unpack("<B", file.read(1))[0]
             xmsamprelnote = struct.unpack("<b", file.read(1))[0]
             xmsampRESERVED = struct.unpack("<B", file.read(1))[0]
-            xmsampname = struct.unpack("<22s", file.read(22))[0].replace('\x00', ' ').rstrip()
+            xmsampname = struct.unpack("<22s", file.read(22))[0]
 
             # Parse it into generic Sample
             self.name = xmsampname
@@ -209,7 +209,7 @@ class XMInstrument(Instrument):
     def load(self, file):    
         # Load the XM instrument data
         xminstheadsize = struct.unpack("<L", file.read(4))[0]
-        xminstname = struct.unpack("<22s", file.read(22))[0].replace('\x00', ' ').rstrip()
+        xminstname = struct.unpack("<22s", file.read(22))[0]
         xminsttype = struct.unpack("<B", file.read(1))[0]    # random junk, supposedly. . .
         self.xminstnumsamples = struct.unpack("<H", file.read(2))[0]
         self.name = xminstname
@@ -300,36 +300,29 @@ class XMInstrument(Instrument):
 class XM(Module):
     """A class that holds an XM module file"""
     def __init__(self, filename=None):
+        super(XM, self).__init__()
         if not filename:
             self.id = 'Extended module: '   # 17 char length (stupid space)
-            self.songname = ''
             self.b1Atch = 0x1A              # byte 1A temp char. . . ;)
             self.tracker = 'FastTracker v2.00'
             self.cwtv = 0x0104
             self.headerlength = 0
-            self.ordernum = 0
             self.restartpos = 0
             self.channelnum = 32
-            self.patternnum = 0
-            self.instrumentnum = 0
-            self.flags = 0
-            self.tempo = 0
-            self.speed = 0
-            self.orders = []
         else:
             f = open(filename, 'rb')
             
-            self.id = struct.unpack("<17s", f.read(17))[0]                # 'Extended module: '
-            self.songname = struct.unpack("<20s", f.read(20))[0].replace('\x00', ' ').strip()    # Song title (padded with NULL)
-            self.b1Atch = struct.unpack("<B", f.read(1))[0]             # 0x1A
-            self.tracker = struct.unpack("<20s", f.read(20))[0].replace('\x00', ' ').strip()
-            self.cwtv = struct.unpack("<H", f.read(2))[0]               # Created with tracker version (XM y.xx = 0yxxh)
+            self.id = struct.unpack("<17s", f.read(17))[0]          # 'Extended module: '
+            self.name = struct.unpack("<20s", f.read(20))[0]        # Song title (padded with NULL)
+            self.b1Atch = struct.unpack("<B", f.read(1))[0]         # 0x1A
+            self.tracker = struct.unpack("<20s", f.read(20))[0]
+            self.cwtv = struct.unpack("<H", f.read(2))[0]           # Created with tracker version (XM y.xx = 0yxxh)
             self.headerlength = struct.unpack("<L", f.read(4))[0]
-            self.ordernum = struct.unpack("<H", f.read(2))[0]           # Number of orders in song
-            self.restartpos = struct.unpack("<H", f.read(2))[0]         # Restart position
-            self.channelnum = struct.unpack("<H", f.read(2))[0]         # Number of channels in song
-            self.patternnum = struct.unpack("<H", f.read(2))[0]         # Number of patterns in song
-            self.instrumentnum = struct.unpack("<H", f.read(2))[0]      # Number of instruments in song
+            self.ordernum = struct.unpack("<H", f.read(2))[0]       # Number of orders in song
+            self.restartpos = struct.unpack("<H", f.read(2))[0]     # Restart position
+            self.channelnum = struct.unpack("<H", f.read(2))[0]     # Number of channels in song
+            self.patternnum = struct.unpack("<H", f.read(2))[0]     # Number of patterns in song
+            self.instrumentnum = struct.unpack("<H", f.read(2))[0]  # Number of instruments in song
             self.flags = struct.unpack("<H", f.read(2))[0]
             self.tempo = struct.unpack("<H", f.read(2))[0]
             self.speed = struct.unpack("<H", f.read(2))[0]
@@ -347,3 +340,7 @@ class XM(Module):
                     self.instruments.append(XMInstrument(f))
 
             f.close()
+            
+    def gettracker(self):
+        return self.tracker.replace('\x00', ' ').strip()
+

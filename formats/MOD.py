@@ -90,7 +90,7 @@ class MODSample(Sample):
         
         if loadtype == 0:
             # Loads the MOD sample headers
-            modsampname = struct.unpack(">22s", file.read(22))[0].replace('\x00', ' ').rstrip()
+            modsampname = struct.unpack(">22s", file.read(22))[0]
             modsamplength = struct.unpack(">H", file.read(2))[0]
             modsampfinetune = struct.unpack(">b", file.read(1))[0]
             modsampvolume = struct.unpack(">B", file.read(1))[0]
@@ -114,7 +114,6 @@ class MODSample(Sample):
 
 class MOD(Module):
     """A class that holds a generic MOD file"""
-    
     MOD_TYPES = (
         ('M.K.', 'Amiga-NewTracker', 4),
         ('M!K!', 'Amiga-ProTracker', 4),
@@ -153,30 +152,22 @@ class MOD(Module):
         ('TDZ1', '1 Channel TakeTracker', 1),
         ('TDZ2', '2 Channel TakeTracker', 2),
         ('TDZ3', '3 Channel TakeTracker', 3),
-        ('TDZ4', '1 Channel MOD', 4),
-        ('TDZ5', '2 Channel MOD', 5),
-        ('TDZ6', '3 Channel MOD', 6),
-        ('TDZ7', '1 Channel MOD', 7),
-        ('TDZ8', '2 Channel MOD', 8),
-        ('TDZ9', '3 Channel MOD', 9)
+        ('TDZ4', '4 Channel MOD', 4),
+        ('TDZ5', '5 Channel MOD', 5),
+        ('TDZ6', '6 Channel MOD', 6),
+        ('TDZ7', '7 Channel MOD', 7),
+        ('TDZ8', '8 Channel MOD', 8),
+        ('TDZ9', '9 Channel MOD', 9)
     )
         
     def __init__(self, filename=None):
+        super(MOD, self).__init__()
         if not filename:
             self.id = '4CHN'                # /b/, for teh lulz. . .(bad joke)
-            self.songname = ''
             self.tracker = '4 Channel MOD'
-            self.ordernum = 0
             self.restartpos = 0
             self.channelnum = 4
-            self.patternnum = 0
             self.samplenum = 31
-            self.flags = 0
-            self.tempo = 0
-            self.speed = 0
-            self.orders = []
-            self.patterns = []
-            self.samples = []
         else:
             f = open(filename, 'rb')        # NOTE: MOD files should be big-endian!
             
@@ -199,7 +190,7 @@ class MOD(Module):
             
             f.seek(0)
             
-            self.songname = struct.unpack(">20s", f.read(20))[0].replace('\x00', ' ').strip()    # Song title (padded with NULL)
+            self.name = struct.unpack(">20s", f.read(20))[0]   # Song title (padded with NULL)
             
             self.samples = []
             for num in range(self.samplenum):
@@ -251,3 +242,4 @@ class MOD(Module):
                 self.samples[num].load(f, 1)         # Loading sample data
 
             f.close()
+
