@@ -27,6 +27,9 @@ class Sample(object):
 
         self.data = []
     
+    def getname(self):
+        return self.name.replace('\x00', ' ').rstrip()
+    
     def load(self, file, offset, loadflags):
         if self.flags & CHN_ADLIB or self.length < 1 or not file:
             self.data = []
@@ -137,6 +140,9 @@ class Instrument(object):
         self.name = ''
         self.filename = ''
         self.played = 0
+        
+    def getname(self):
+        return self.name.replace('\x00', ' ').rstrip()
 
 
 class Channel(object):
@@ -167,5 +173,28 @@ class Pattern(object):
 
 
 class Module(object):
-    pass
+    """A plain module object"""
+    def __init__(self):
+        self.filename = ''
+        self.moduletype = ''
+        self.id = ''
+        self.name = ''
+        self.tracker = ''
+        self.cwtv = 0
+        self.cmwt = 0
+        self.tempo = 0
+        self.speed = 0
+        self.flags = 0
+        self.channelnum = 0
+        self.ordernum = 0
+        self.patternnum = 0
+        self.instrumentnum = 0
+        self.samplenum = 0
+        self.orders = []
+        self.patterns = []
+        self.instruments = []
+        self.samples = []
+    
+    def getname(self):
+        return self.name.replace('\x00', ' ').strip()
 
