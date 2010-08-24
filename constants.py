@@ -45,6 +45,7 @@ SF_AMS = SDV(6, 'ENC')    # AMS / Velvet Studio packed
 SF_DMF = SDV(7, 'ENC')    # DMF Huffman compression
 SF_MDL = SDV(8, 'ENC')    # MDL Huffman compression
 SF_PTM = SDV(9, 'ENC')    # PTM 8-bit delta value -> 16-bit sample
+SF_ADP = SDV(10, 'ENC')   # 4-bit ADPCM data
 
 # Deprecated constants (?)
 #define RS_AMS16        SF(AMS,16,M,LE)
