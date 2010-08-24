@@ -15,10 +15,7 @@ def File(filename, options=None):
     if not options:
         return None
 
-    try:
-        results = [(Kind.detect(filename), Kind.__name__) for Kind in options]
-    finally:
-        pass
+    results = [(Kind.detect(filename), Kind.__name__) for Kind in options]
     
     results = zip(results, options)
     results.sort()
