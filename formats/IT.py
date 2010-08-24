@@ -573,10 +573,4 @@ class IT(Module):
     
     def getmessage(self):
         return self.message.replace('\r', '\n').replace('\x00', ' ').rstrip()
-    
-    def __unicode__(self):
-        return 'IT Module (%s)' % ((self.getname(), self.filename)[bool(self.getname() == '')])
-    
-    def __repr__(self):
-        return self.__unicode__()
 

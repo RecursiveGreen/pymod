@@ -198,3 +198,9 @@ class Module(object):
     def getname(self):
         return self.name.replace('\x00', ' ').strip()
 
+    def __unicode__(self):
+        return '%s Module (%s)' % (self.__class__.__name__, (self.getname(), self.filename)[bool(self.getname() == '')])
+    
+    def __repr__(self):
+        return self.__unicode__()
+

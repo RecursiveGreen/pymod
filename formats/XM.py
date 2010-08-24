@@ -354,10 +354,4 @@ class XM(Module):
             
     def gettracker(self):
         return self.tracker.replace('\x00', ' ').strip()
-    
-    def __unicode__(self):
-        return 'XM Module (%s)' % ((self.getname(), self.filename)[bool(self.getname() == '')])
-    
-    def __repr__(self):
-        return self.__unicode__()
 

@@ -258,9 +258,3 @@ class S3M(Module):
             return 0
     detect = staticmethod(detect)
 
-    def __unicode__(self):
-        return 'S3M Module (%s)' % ((self.getname(), self.filename)[bool(self.getname() == '')])
-    
-    def __repr__(self):
-        return self.__unicode__()
-
