@@ -1,7 +1,7 @@
 __all__ = ['formats', 'constants', 'module', 'tables', 'util']
 
 def File(filename, options=None):
-    """Guess the type of the file and try to open it. If no appropriate 
+    """Guesses the type of the file and tries to open it. If no appropriate 
     type could be found, None is returned."""
 
     # Modified code from the Mutagen library (http://code.google.com/p/mutagen/)
