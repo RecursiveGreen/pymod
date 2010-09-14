@@ -1,5 +1,132 @@
 ################################################################################
 #
+# Library Min/Max Constants:
+
+MOD_AMIGAC2	= 0x1AB
+MAX_SAMPLE_LENGTH = 16000000
+MAX_SAMPLE_RATE	= 192000
+MAX_ORDERS = 256
+MAX_PATTERNS = 240
+MAX_SAMPLES = 240
+MAX_INSTRUMENTS = MAX_SAMPLES
+MAX_CHANNELS = 128
+MAX_BASECHANNELS = 64
+MAX_ENVPOINTS = 32
+MIN_PERIOD = 0x0020
+MAX_PERIOD = 0xFFFF
+MAX_PATTERNNAME = 32
+MAX_CHANNELNAME = 20
+MAX_INFONAME = 80
+MAX_EQ_BANDS = 6
+MAX_MIXPLUGINS = 8
+
+
+################################################################################
+#
+# Module Types:
+
+MOD_TYPE_NONE = 0x00
+MOD_TYPE_MOD = 0x01
+MOD_TYPE_S3M = 0x02
+MOD_TYPE_XM = 0x04
+MOD_TYPE_MED = 0x08
+MOD_TYPE_MTM = 0x10
+MOD_TYPE_IT = 0x20
+MOD_TYPE_669 = 0x40
+MOD_TYPE_ULT = 0x80
+MOD_TYPE_STM = 0x100
+MOD_TYPE_FAR = 0x200
+MOD_TYPE_WAV = 0x400
+MOD_TYPE_AMF = 0x800
+MOD_TYPE_AMS = 0x1000
+MOD_TYPE_DSM = 0x2000
+MOD_TYPE_MDL = 0x4000
+MOD_TYPE_OKT = 0x8000
+MOD_TYPE_MID = 0x10000
+MOD_TYPE_DMF = 0x20000
+MOD_TYPE_PTM = 0x40000
+MOD_TYPE_DBM = 0x80000
+MOD_TYPE_MT2 = 0x100000
+MOD_TYPE_AMF0 = 0x200000
+MOD_TYPE_PSM = 0x400000
+MOD_TYPE_J2B = 0x800000
+MOD_TYPE_ABC = 0x1000000
+MOD_TYPE_PAT = 0x2000000
+MOD_TYPE_UMX = 0x80000000
+MAX_MODTYPE = 24            # is this needed?
+
+
+################################################################################
+#
+# Song specifics (for MPT as well):
+
+SONG_EMBEDMIDICFG = 0x0001
+SONG_FASTVOLSLIDES = 0x0002
+SONG_ITOLDEFFECTS = 0x0004
+SONG_ITCOMPATMODE = 0x0008
+SONG_LINEARSLIDES = 0x0010
+SONG_PATTERNLOOP = 0x0020
+SONG_STEP = 0x0040
+SONG_PAUSED = 0x0080
+SONG_FADINGSONG = 0x0100
+SONG_ENDREACHED = 0x0200
+SONG_GLOBALFADE	= 0x0400
+SONG_CPUVERYHIGH = 0x0800
+SONG_FIRSTTICK = 0x1000
+SONG_MPTFILTERMODE = 0x2000
+SONG_SURROUNDPAN = 0x4000
+SONG_EXFILTERRANGE = 0x8000
+SONG_AMIGALIMITS = 0x10000
+
+
+################################################################################
+#
+# Mixing Flags:
+
+# Global Options (Renderer)
+MIX_REVERSESTEREO = 0x0001
+MIX_NOISEREDUCTION = 0x0002
+MIX_AGC = 0x0004
+MIX_NORESAMPLING = 0x0008
+MIX_HQRESAMPLER = 0x0010
+MIX_MEGABASS = 0x0020
+MIX_SURROUND = 0x0040
+MIX_REVERB = 0x0080
+MIX_EQ = 0x0100
+MIX_SOFTPANNING = 0x0200
+MIX_ULTRAHQSRCMODE = 0x0400
+
+# Misc Flags (not certain if these will be used. . .)
+MIX_DIRECTTODISK = 0x10000
+MIX_ENABLEMMX = 0x20000
+MIX_NOBACKWARDJUMPS	= 0x40000
+MIX_MAXDEFAULTPAN = 0x80000
+
+# Reverb types
+(REVERBTYPE_SMALLROOM, REVERBTYPE_MEDIUMROOM, REVERBTYPE_LARGEROOM,	REVERBTYPE_SMALLHALL,
+	REVERBTYPE_MEDIUMHALL, REVERBTYPE_LARGEHALL, NUM_REVERBTYPES) = range(7)
+
+# SRC Modes
+(SRCMODE_NEAREST, SRCMODE_LINEAR, SRCMODE_SPLINE, SRCMODE_POLYPHASE, NUM_SRC_MODES) = range(5)
+
+# Mix Plugins
+MIXPLUG_MIXREADY = 0x01             # Set when cleared
+MIXPLUG_INPUTF_MASTEREFFECT = 0x01  # Apply to master mix
+MIXPLUG_INPUTF_BYPASS = 0x02        # Bypass effect
+MIXPLUG_INPUTF_WETMIX = 0x04        # Wet Mix (dry added)
+
+
+################################################################################
+#
+# Midi:
+
+
+(MIDIOUT_START, MIDIOUT_STOP, MIDIOUT_TICK, MIDIOUT_NOTEON, MIDIOUT_NOTEOFF, MIDIOUT_VOLUME,
+    MIDIOUT_PAN, MIDIOUT_BANKSEL, MIDIOUT_PROGRAM) = range(9)
+
+
+################################################################################
+#
 # Sample data characteristics
 # Note:
 # - None of these constants are zero
@@ -155,7 +282,7 @@ ENV_FLAGS = [[ENV_VOLUME, ENV_VOLLOOP, ENV_VOLSUSTAIN, ENV_VOLCARRY],
 
 ################################################################################
 #
-#  Notes
+#  Notes:
 
 NOTE_NONE = 0      # ...
 NOTE_FIRST = 1     # C-0
@@ -168,7 +295,7 @@ NOTE_OFF = 255     # ===
 
 ################################################################################
 #
-#  Instrument settings
+#  Instrument settings:
 
 # Auto-vibrato types
 VIB_SINE = 0
@@ -196,7 +323,7 @@ DCA_NOTEFADE = 2
 
 ################################################################################
 #
-#  Effects
+#  Effects (Commands) and Volume Effects:
 
 FX_NONE = 0
 FX_ARPEGGIO = 1
@@ -217,7 +344,8 @@ FX_RETRIG = 15
 FX_SPEED = 16
 FX_TEMPO = 17
 FX_TREMOR = 18
-FX_SPECIAL = 20
+FX_MODCMDEX = 19
+FX_S3MCMDEX = 20
 FX_CHANNELVOLUME = 21
 FX_CHANNELVOLSLIDE = 22
 FX_GLOBALVOLUME = 23
@@ -225,6 +353,7 @@ FX_GLOBALVOLSLIDE = 24
 FX_KEYOFF = 25
 FX_FINEVIBRATO = 26
 FX_PANBRELLO = 27
+FX_XFINEPORTAUPDOWN = 28
 FX_PANNINGSLIDE = 29
 FX_SETENVPOSITION = 30
 FX_MIDI = 31
