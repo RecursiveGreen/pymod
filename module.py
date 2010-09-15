@@ -308,26 +308,84 @@ class Pattern(object):
 class Module(object):
     """A plain module object"""
     def __init__(self):
+        # For playback. . .
+        self.xbassdepth = 0
+        self.xbassrange = 0
+        self.reverbdepth = 0
+        self.reverbdelay = 0
+        self.reverbtype = 0
+        self.prologicdepth = 0
+        self.prologicdelay = 0
+        self.stereosep = 0
+        self.maxmixchannels = 0
+        self.streamvol = 0
+        self.sysinfo = 0
+        self.soundsetup = 0
+        self.mixfreq = 0
+        self.bitspersample = 0
+        self.chn = 0
+        self.agc = 0
+        self.volrampsamples = 0
+        self.vumeter = 0
+        self.cpuusage = 0
+        
+        # For editing. . .
+        self.channels = []
+        self.channelmix = []
+        self.channelsettings = []
+        self.samples = []
+        self.instruments = []
+        self.patterns = []
+        self.orders = []
+        self.midiglb = []
+        self.midisfxext = []
+        self.midizxxext = []
+        self.mixplugins = []
+        self.defaultspeed = 0
+        self.defaulttempo = 0
+        self.defaultglobalvol = 0
+        self.songflags = 0
+        self.channelnum = 0
+        self.channelmixnum = 0
+        self.mixstat = 0
+        self.buffercount = 0
+        self.type = MOD_TYPE_NONE
+        self.samplenum = 0
+        self.instrumentnum = 0
+        self.tickcount = 0
+        self.totalcount = 0
+        self.patterndelay = 0
+        self.framedelay = 0
+        self.musicspeed = 0
+        self.musictempo = 0
+        self.nextrow = 0
+        self.row = 0
+        self.patternnum = 0
+        self.curpattern = 0
+        self.nextpattern = 0
+        self.restartpos = 0
+        self.mastervol = 0
+        self.globalvol = 0
+        self.songpreamp = 0
+        self.freqfactor = 128
+        self.tempofactor = 128
+        self.oldglobalvolslide = 0
+        self.minperiod = 0x20
+        self.maxperiod = 0x7FFF
+        self.repeatcount = 0
+        self.initrepeatcount = 0
+        self.globalfadesamples = 0
+        self.globalfademaxsamples = 0
+        self.maxorderposition = 0
+        self.patternnamesnum = 0
+        self.compressiontable = []
+        self.comments = ''
+        self.patternnames = []
         self.filename = ''
-        self.moduletype = ''
         self.id = ''
         self.name = ''
         self.tracker = ''
-        self.cwtv = 0
-        self.cmwt = 0
-        self.tempo = 0
-        self.speed = 0
-        self.flags = 0
-        self.channelnum = 0
-        self.ordernum = 0
-        self.patternnum = 0
-        self.instrumentnum = 0
-        self.samplenum = 0
-        self.orders = []
-        self.patterns = []
-        self.instruments = []
-        self.samples = []
-    
+        
     def getname(self):
         return self.name.replace('\x00', ' ').strip()
 
